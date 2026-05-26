@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IoT — Interface Analógico-Digital · André Damião</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+:root {
+  --bg: #0e0e0d;
+  --surface: #161614;
+  --surface2: #1e1e1b;
+  --border: #2a2a26;
+  --border2: #3a3a34;
+  --text: #f0efe8;
+  --muted: #888880;
+  --dim: #555550;
+  --accent: #e8651a;
+  --font-mono: 'DM Mono', monospace;
+  --font-sans: 'DM Sans', sans-serif;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.7;
+  min-height: 100vh;
+}
+
+/* ── HEADER ── */
+header {
+  border-bottom: 1px solid var(--border);
+  padding: 20px 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  background: rgba(14,14,13,.92);
+  backdrop-filter: blur(12px);
+  z-index: 10;
+}
+
+.header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.header-course {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.header-title {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text);
+}
+
+.header-right {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* ── HERO ── */
+.hero {
+  padding: 80px 48px 64px;
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 80px;
+  align-items: end;
+  border-bottom: 1px solid var(--border);
+}
+
+.hero-left {}
+
+.hero-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hero-eyebrow::after {
+  content: '';
+  height: 1px;
+  width: 32px;
+  background: var(--accent);
+  opacity: .4;
+  display: block;
+}
+
+h1 {
+  font-size: clamp(36px, 5vw, 64px);
+  font-weight: 300;
+  line-height: 1.05;
+  letter-spacing: -.03em;
+  color: var(--text);
+  margin-bottom: 28px;
+}
+
+h1 em {
+  font-style: normal;
+  color: var(--accent);
+}
+
+.hero-desc {
+  font-size: 15px;
+  font-weight: 300;
+  color: var(--muted);
+  line-height: 1.75;
+  max-width: 420px;
+}
+
+.hero-right {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding-bottom: 4px;
+}
+
+.hero-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.hero-stat:first-child {
+  border-top: 1px solid var(--border);
+}
+
+.hero-stat-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--dim);
+}
+
+.hero-stat-value {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.hero-stat-value em {
+  font-style: normal;
+  color: var(--accent);
+  font-size: 20px;
+  font-weight: 300;
+}
+
+/* ── TOOLS STRIP ── */
+.tools-strip {
+  border-bottom: 1px solid var(--border);
+  padding: 16px 48px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  max-width: 1100px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* need to remove max-width restriction */
+.tools-strip-wrap {
+  border-bottom: 1px solid var(--border);
+}
+
+.tools-strip-inner {
+  padding: 16px 48px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.tool-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 4px 10px;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  background: var(--surface);
+  letter-spacing: .04em;
+  white-space: nowrap;
+}
+
+/* ── GRID DE AULAS ── */
+.aulas-section {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 52px 48px 100px;
+}
+
+.semana-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--dim);
+  margin-bottom: 12px;
+  margin-top: 48px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.semana-label:first-of-type { margin-top: 0; }
+
+.semana-label span {
+  color: var(--border2);
+  font-size: 9px;
+}
+
+.aulas-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+}
+
+.aula-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0;
+  padding: 24px 28px;
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+  transition: background .15s, border-color .15s;
+  cursor: pointer;
+}
+
+.aula-card:hover {
+  background: var(--surface2);
+  border-color: var(--border2);
+}
+
+.aula-card.available:hover .aula-arrow {
+  transform: translateX(4px);
+}
+
+.aula-card.locked {
+  cursor: default;
+}
+
+.aula-card.locked:hover {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+.aula-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.aula-num {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--dim);
+  letter-spacing: .08em;
+}
+
+.aula-card.available .aula-num {
+  color: var(--accent);
+}
+
+.aula-tags {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.aula-tag {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 2px;
+}
+
+.tag-pd  { background: rgba(232,101,26,.12); color: #e8651a; }
+.tag-p5  { background: rgba(95,184,212,.10); color: #5fb8d4; }
+.tag-hw  { background: rgba(240,128,64,.10); color: #f08040; }
+.tag-iot { background: rgba(126,200,140,.10); color: #7ec88c; }
+.tag-mob { background: rgba(200,160,232,.10); color: #c8a0e8; }
+.tag-sem { background: rgba(200,200,200,.08); color: #888880; }
+
+.aula-title {
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--text);
+  line-height: 1.3;
+  letter-spacing: -.01em;
+}
+
+.aula-card.locked .aula-title {
+  color: var(--muted);
+}
+
+.aula-desc {
+  font-size: 12px;
+  color: var(--dim);
+  line-height: 1.55;
+}
+
+.aula-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+
+.aula-dur {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--dim);
+}
+
+.aula-arrow {
+  font-size: 14px;
+  color: var(--accent);
+  transition: transform .2s;
+}
+
+.aula-lock {
+  font-size: 12px;
+  color: var(--border2);
+}
+
+/* Aula 8 — seminários: full width */
+.aula-card.full {
+  grid-column: 1 / -1;
+  flex-direction: row;
+  align-items: center;
+  gap: 32px;
+}
+
+.aula-card.full .aula-title {
+  font-size: 18px;
+}
+
+.aula-card.full .aula-desc {
+  flex: 1;
+}
+
+/* ── FOOTER ── */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 24px 48px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.footer-text {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--dim);
+}
+
+.footer-text a {
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.footer-text a:hover { color: var(--accent); }
+
+/* ── FADE IN ── */
+.fade-in {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity .45s ease, transform .45s ease;
+}
+
+.fade-in.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── MOBILE ── */
+@media (max-width: 700px) {
+  header { padding: 16px 20px; }
+  .hero { grid-template-columns: 1fr; padding: 48px 20px 40px; gap: 40px; }
+  .hero-desc { max-width: 100%; }
+  .tools-strip-inner { padding: 14px 20px; }
+  .aulas-section { padding: 36px 20px 80px; }
+  .aulas-grid { grid-template-columns: 1fr; }
+  .aula-card.full { flex-direction: column; }
+  footer { padding: 20px; flex-direction: column; gap: 8px; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="header-course">IoT — Interface Analógico-Digital</div>
+    <div class="header-title">André Damião</div>
+  </div>
+  <div class="header-right">8 aulas · 24h</div>
+</header>
+
+<section class="hero">
+  <div class="hero-left fade-in">
+    <div class="hero-eyebrow">Programação interativa</div>
+    <h1>Interface<br><em>analógico-</em><br><em>digital</em></h1>
+    <p class="hero-desc">Sensores, hardware conectado e programação criativa para o campo da UX. Do algoritmo à instalação — passando por Pure Data, p5.js, Arduino, ESP32 e IoT.</p>
+  </div>
+  <div class="hero-right fade-in" style="transition-delay:.1s">
+    <div class="hero-stat">
+      <span class="hero-stat-label">Aulas</span>
+      <span class="hero-stat-value"><em>8</em></span>
+    </div>
+    <div class="hero-stat">
+      <span class="hero-stat-label">Carga horária</span>
+      <span class="hero-stat-value"><em>24h</em></span>
+    </div>
+    <div class="hero-stat">
+      <span class="hero-stat-label">Formato</span>
+      <span class="hero-stat-value">Laboratório</span>
+    </div>
+    <div class="hero-stat">
+      <span class="hero-stat-label">Professor</span>
+      <span class="hero-stat-value">André Damião</span>
+    </div>
+    <div class="hero-stat">
+      <span class="hero-stat-label">Output</span>
+      <span class="hero-stat-value">Projeto interativo</span>
+    </div>
+  </div>
+</section>
+
+<div class="tools-strip-wrap">
+  <div class="tools-strip-inner fade-in" style="transition-delay:.18s">
+    <span class="tool-badge">Pure Data</span>
+    <span class="tool-badge">p5.js</span>
+    <span class="tool-badge">Arduino</span>
+    <span class="tool-badge">ESP32</span>
+    <span class="tool-badge">Serial · MIDI · OSC</span>
+    <span class="tool-badge">MobMuPlat</span>
+    <span class="tool-badge">MQTT</span>
+    <span class="tool-badge">Node-RED</span>
+    <span class="tool-badge">ml5.js</span>
+    <span class="tool-badge">IoT</span>
+    <span class="tool-badge">UX interativo</span>
+  </div>
+</div>
+
+<section class="aulas-section">
+
+  <div class="semana-label fade-in" style="transition-delay:.22s">Semana 1 <span>Fundamentos</span></div>
+  <div class="aulas-grid fade-in" style="transition-delay:.26s">
+
+    <a class="aula-card available" href="aula01.html">
+      <div class="aula-top">
+        <span class="aula-num">Aula 01</span>
+        <div class="aula-tags">
+          <span class="aula-tag tag-pd">PD</span>
+        </div>
+      </div>
+      <div class="aula-title">Introdução ao curso e ao Pure Data</div>
+      <div class="aula-desc">Obras de referência — coletivos que trabalham na fronteira entre arte interativa e mercado. Introdução à programação: algoritmos, objetos e métodos. Primeiros patches em PD.</div>
+      <div class="aula-bottom">
+        <span class="aula-dur">3h</span>
+        <span class="aula-arrow">→</span>
+      </div>
+    </a>
+
+    <div class="aula-card locked">
+      <div class="aula-top">
+        <span class="aula-num">Aula 02</span>
+        <div class="aula-tags">
+          <span class="aula-tag tag-p5">p5</span>
+        </div>
+      </div>
+      <div class="aula-title">p5.js e uso consciente de IA</div>
+      <div class="aula-desc">Introdução ao p5.js. Draw loop, formas, animação, interatividade. IA como ferramenta de programação — como usar sem perder autoria. Prospecção de projetos.</div>
+      <div class="aula-bottom">
+        <span class="aula-dur">3h</span>
+        <span class="aula-lock">em breve</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="semana-label fade-in" style="transition-delay:.3s">Semana 2 <span>Hardware e integração</span></div>
+  <div class="aulas-grid fade-in" style="transition-delay:.34s">
+
+    <div class="aula-card locked">
+      <div class="aula-top">
+        <span class="aula-num">Aula 03</span>
+        <div class="aula-tags">
+          <span class="aula-tag tag-hw">HW</span>
+          <span class="aula-tag tag-p5">p5</span>
+        </div>
+      </div>
+      <div class="aula-title">Hardware e protocolos de comunicação</div>
+      <div class="aula-desc">Arduino e ESP32. Sensores básicos. Protocolos Serial, MIDI e OSC. Integração com p5.js via Web Serial — sensor controlando parâmetros visuais em tempo real.</div>
+      <div class="aula-bottom">
+        <span class="aula-dur">3h</span>
+        <span class="aula-lock">em breve</span>
+      </div>
+    </div>
+
+    <div class="aula-card locked">
+      <div class="aula-top">
+        <span class="aula-num">Aula 04</span>
+        <div class="aula-tags">
+          <span class="aula-tag tag-hw">HW</span>
+          <span class="aula-tag tag-pd">PD</span>
+          <span class="aula-tag tag-p5">p5</span>
+        </div>
+      </div>
+      <div class="aula-title">Integração, sensores complexos e estética da interface</div>
+      <div class="aula-desc">Pipeline completo: hardware → PD → p5.js. IMU, câmera e visão computacional com ml5.js. Interface como obra — decisões estéticas sobre latência, resposta e presença.</div>
+      <div class="aula-bottom">
+        <span class="aula-dur">3h</span>
+        <span class="aula-lock">em breve</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="semana-label fade-in" style="transition-delay:.38s">Semana 3 <span>Mobile e IoT</span></div>
+  <div class="aulas-grid fade-in" style="transition-delay:.42s">
+
+    <div class="aula-card locked">
+      <div class="aula-top">
+        <span class="aula-num">Aula 05</span>
+        <div class="aula-tags">
+          <span class="aula-tag tag-mob">MOB</span>
+          <span class="aula-tag tag-p5">p5</span>
+        </div>
+      </div>
+      <div class="aula-title">App mobile — MobMuPlat e p5.js</div>
+      <div class="aula-desc">MobMuPlat: interfaces no smartphone controlando PD via OSC. p5.js em dispositivos móveis. O smartphone como instrumento, sensor ou interface do público.</div>
+      <div class="aula-bottom">
+        <span class="aula-dur">3h</span>
+        <span class="aula-lock">em breve</span>
+      </div>
+    </div>
+
+    <div class="aula-card locked">
+      <div class="aula-top">
+        <span class="aula-num">Aula 06</span>
+        <div class="aula-tags">
+          <span class="aula-tag tag-iot">IoT</span>
+          <span class="aula-tag tag-hw">HW</span>
+        </div>
+      </div>
+      <div class="aula-title">IoT — conceitos e plataformas</div>
+      <div class="aula-desc">Internet das Coisas: objetos conectados em rede. MQTT e brokers. ESP32 com WiFi nativo. Plataformas Adafruit IO e Node-RED. Instalações distribuídas e ambientes responsivos.</div>
+      <div class="aula-bottom">
+        <span class="aula-dur">3h</span>
+        <span class="aula-lock">em breve</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="semana-label fade-in" style="transition-delay:.46s">Semana 4 <span>Integração e apresentação</span></div>
+  <div class="aulas-grid fade-in" style="transition-delay:.5s">
+
+    <div class="aula-card locked">
+      <div class="aula-top">
+        <span class="aula-num">Aula 07</span>
+        <div class="aula-tags">
+          <span class="aula-tag tag-iot">IoT</span>
+          <span class="aula-tag tag-pd">PD</span>
+          <span class="aula-tag tag-p5">p5</span>
+        </div>
+      </div>
+      <div class="aula-title">IoT — integração com Pure Data e p5.js</div>
+      <div class="aula-desc">Pipeline completo: ESP32 → MQTT → PD → p5.js. Node-RED como hub de roteamento. Múltiplos dispositivos alimentando uma instalação centralizada. Finalização dos projetos.</div>
+      <div class="aula-bottom">
+        <span class="aula-dur">3h</span>
+        <span class="aula-lock">em breve</span>
+      </div>
+    </div>
+
+    <div class="aula-card locked full" style="grid-column: unset">
+      <div>
+        <div class="aula-top" style="margin-bottom:10px">
+          <span class="aula-num">Aula 08</span>
+          <div class="aula-tags">
+            <span class="aula-tag tag-sem">SEM</span>
+          </div>
+        </div>
+        <div class="aula-title">Seminários — apresentação dos projetos</div>
+      </div>
+      <div class="aula-desc">Apresentação dos projetos desenvolvidos ao longo do curso. Cada aluno apresenta intenção, processo, decisões técnicas e estéticas. Discussão crítica coletiva e encerramento.</div>
+      <div class="aula-bottom" style="margin-top:auto">
+        <span class="aula-dur">3h</span>
+        <span class="aula-lock">em breve</span>
+      </div>
+    </div>
+
+  </div>
+
+</section>
+
+<footer>
+  <span class="footer-text">IoT — Interface Analógico-Digital · André Damião</span>
+  <span class="footer-text">8 aulas · 24h · <a href="aula01.html">Aula 01 →</a></span>
+</footer>
+
+<script>
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.05 });
+document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+</script>
+
+<script src="nav.js"></script>
+</body>
+</html>
