@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aula 2 — Pure Data: bibliotecas, interfaces e Arduino</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0e0d;
+    --surface: #161614;
+    --surface2: #1e1e1b;
+    --border: #2a2a26;
+    --border2: #3a3a34;
+    --text: #f0efe8;
+    --muted: #888880;
+    --dim: #555550;
+    --accent: #e8651a;
+    --accent2: #c45010;
+    --pd-orange: #e8651a;
+    --font-mono: 'DM Mono', monospace;
+    --font-sans: 'DM Sans', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  main {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 0 32px 100px;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 56px 0 40px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 56px;
+  }
+
+  .hero-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .hero-eyebrow::after {
+    content: '';
+    display: block;
+    height: 1px;
+    width: 40px;
+    background: var(--accent);
+    opacity: .4;
+  }
+
+  h1 {
+    font-size: clamp(24px, 4vw, 36px);
+    font-weight: 300;
+    line-height: 1.2;
+    letter-spacing: -.02em;
+    color: var(--text);
+    margin-bottom: 20px;
+  }
+
+  h1 em { font-style: normal; color: var(--accent); }
+
+  .hero-meta { display: flex; gap: 20px; flex-wrap: wrap; }
+
+  .hero-meta span {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .hero-meta span::before { content: '·'; color: var(--accent); }
+
+  /* ── TIMELINE ── */
+  .timeline { display: flex; flex-direction: column; }
+
+  .bloco {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 0 28px;
+    position: relative;
+    padding-bottom: 60px;
+  }
+
+  .bloco:last-child { padding-bottom: 0; }
+
+  .bloco-time { padding-top: 4px; text-align: right; }
+
+  .bloco-time-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--dim);
+  }
+
+  .bloco-time-dur {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  .bloco-line {
+    position: absolute;
+    left: 80px;
+    top: 8px;
+    bottom: 0;
+    width: 1px;
+    background: var(--border);
+  }
+
+  .bloco:last-child .bloco-line { display: none; }
+
+  .bloco-dot {
+    position: absolute;
+    left: 76px;
+    top: 6px;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--bg);
+  }
+
+  .bloco-body { padding-left: 28px; }
+
+  .bloco-header { margin-bottom: 24px; }
+
+  .bloco-num {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  h2 {
+    font-size: 20px;
+    font-weight: 400;
+    color: var(--text);
+    letter-spacing: -.01em;
+    line-height: 1.3;
+  }
+
+  h3 {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    margin: 32px 0 14px;
+    font-family: var(--font-mono);
+  }
+
+  p { color: var(--text); margin-bottom: 14px; font-size: 15px; }
+
+  ul.items {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+
+  ul.items li {
+    display: flex;
+    gap: 12px;
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  ul.items li::before {
+    content: '→';
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    flex-shrink: 0;
+    margin-top: 3px;
+  }
+
+  /* ── CALLOUT ── */
+  .callout {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.65;
+  }
+
+  .callout strong { color: var(--accent); font-weight: 500; }
+
+  /* ── BIBLIOTECA CARD ── */
+  .bibliotecas {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-bottom: 24px;
+  }
+
+  .biblioteca {
+    display: grid;
+    grid-template-columns: 110px 1fr auto;
+    gap: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    transition: border-color .15s;
+  }
+
+  .biblioteca:hover { border-color: var(--border2); }
+
+  .biblioteca-nome {
+    padding: 14px 16px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--accent);
+    border-right: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+  }
+
+  .biblioteca-desc {
+    padding: 14px 18px;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.55;
+    display: flex;
+    align-items: center;
+  }
+
+  .biblioteca-link {
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    border-left: 1px solid var(--border);
+  }
+
+  .biblioteca-link a {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--dim);
+    text-decoration: none;
+    transition: color .15s;
+    white-space: nowrap;
+  }
+
+  .biblioteca-link a:hover { color: var(--accent); }
+
+  /* ── STEPS ── */
+  .steps { display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
+
+  .step {
+    display: grid;
+    grid-template-columns: 28px 1fr;
+    gap: 14px;
+    align-items: start;
+  }
+
+  .step-n {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+
+  .step-text {
+    font-size: 14px;
+    color: var(--text);
+    padding-top: 4px;
+    line-height: 1.6;
+  }
+
+  .step-text code {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 1px 6px;
+    color: var(--pd-orange);
+  }
+
+  .step-text em { color: var(--muted); font-style: normal; }
+
+  /* ── OBJETOS PD ── */
+  .pd-objetos {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-bottom: 24px;
+  }
+
+  .pd-objeto {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .pd-objeto-nome {
+    padding: 10px 14px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--pd-orange);
+    border-right: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    background: rgba(232,101,26,.05);
+  }
+
+  .pd-objeto-desc {
+    padding: 10px 16px;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+    display: flex;
+    align-items: center;
+  }
+
+  .pd-objeto-desc em { color: var(--text); font-style: normal; }
+
+  /* ── CONCEITO ── */
+  .conceito {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+  }
+
+  .conceito-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+
+  .conceito-title {
+    font-size: 17px;
+    font-weight: 400;
+    color: var(--text);
+    margin-bottom: 10px;
+    letter-spacing: -.01em;
+  }
+
+  .conceito p {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 8px;
+    line-height: 1.65;
+  }
+
+  .conceito p:last-child { margin-bottom: 0; }
+
+  .conceito code {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 3px;
+    padding: 1px 6px;
+    color: var(--pd-orange);
+  }
+
+  /* ── DIVIDER ── */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 52px 0 36px;
+  }
+
+  /* ── LINKS ── */
+  .links-grid { display: flex; flex-direction: column; gap: 6px; }
+
+  .link-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    text-decoration: none;
+    color: var(--text);
+    font-size: 13px;
+    transition: border-color .15s, background .15s;
+  }
+
+  .link-item:hover { border-color: var(--border2); background: var(--surface2); }
+  .link-icon { font-family: var(--font-mono); font-size: 13px; color: var(--accent); flex-shrink: 0; width: 20px; text-align: center; }
+  .link-desc { font-size: 11px; color: var(--muted); margin-top: 2px; font-family: var(--font-mono); }
+  .link-body { flex: 1; }
+  .link-arrow { font-size: 11px; color: var(--dim); margin-left: auto; }
+
+  /* ── FADE IN ── */
+  .fade-in {
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity .5s ease, transform .5s ease;
+  }
+  .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 640px) {
+    main { padding: 0 18px 80px; }
+    .bloco { grid-template-columns: 60px 1fr; }
+    .biblioteca { grid-template-columns: 1fr; }
+    .biblioteca-link { border-left: none; border-top: 1px solid var(--border); }
+    .pd-objeto { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<main>
+
+  <div class="hero">
+    <div class="hero-eyebrow">Aula 02 · Semana 1 · 3 horas</div>
+    <h1>Pure Data —<br>bibliotecas, interfaces<br>e <em>Arduino</em></h1>
+    <div class="hero-meta">
+      <span>Formato laboratório</span>
+      <span>Pd Vanilla instalado</span>
+      <span>Arduino + cabo USB</span>
+    </div>
+  </div>
+
+  <div class="timeline">
+
+    <!-- BLOCO 1 -->
+    <div class="bloco fade-in">
+      <div class="bloco-time">
+        <div class="bloco-time-dur">20min</div>
+        <div class="bloco-time-label">Bloco 1</div>
+      </div>
+      <div class="bloco-line"></div>
+      <div class="bloco-dot"></div>
+      <div class="bloco-body">
+        <div class="bloco-header">
+          <div class="bloco-num">Bloco 01</div>
+          <h2>Revisão — Pure Data</h2>
+        </div>
+
+        <p>Retomada rápida dos conceitos da aula anterior antes de avançar para os novos tópicos.</p>
+
+        <h3>Objetos fundamentais revisados</h3>
+        <div class="pd-objetos">
+          <div class="pd-objeto">
+            <div class="pd-objeto-nome">[osc~]</div>
+            <div class="pd-objeto-desc">Oscilador senoidal. Recebe frequência em Hz na entrada, gera sinal de áudio contínuo na saída.</div>
+          </div>
+          <div class="pd-objeto">
+            <div class="pd-objeto-nome">[*~ 0.5]</div>
+            <div class="pd-objeto-desc">Multiplicador de sinal — controla amplitude. O argumento é o fator; <em>0.5 = metade do volume</em>.</div>
+          </div>
+          <div class="pd-objeto">
+            <div class="pd-objeto-nome">[dac~]</div>
+            <div class="pd-objeto-desc">Digital-to-analog converter — saída de áudio do sistema. Duas entradas: canal esquerdo e direito.</div>
+          </div>
+          <div class="pd-objeto">
+            <div class="pd-objeto-nome">[number] / [hslider]</div>
+            <div class="pd-objeto-desc">Interfaces de controle em tempo real. Atributos expostos como parâmetros manipuláveis pelo usuário.</div>
+          </div>
+          <div class="pd-objeto">
+            <div class="pd-objeto-nome">[toggle]</div>
+            <div class="pd-objeto-desc">Liga e desliga — envia 1 ou 0. Útil para ativar e desativar partes do patch sem interromper o DSP.</div>
+          </div>
+          <div class="pd-objeto">
+            <div class="pd-objeto-nome">[bang]</div>
+            <div class="pd-objeto-desc">Impulso sem valor — sinaliza <em>"execute agora"</em>. Dispara mensagens e reinicia estados.</div>
+          </div>
+          <div class="pd-objeto">
+            <div class="pd-objeto-nome">[print]</div>
+            <div class="pd-objeto-desc">Imprime o valor recebido no console do PD. Ferramenta essencial para inspecionar o fluxo de dados e encontrar erros.</div>
+          </div>
+          <div class="pd-objeto">
+            <div class="pd-objeto-nome">[metro 500]</div>
+            <div class="pd-objeto-desc">Metrônomo — envia bangs em intervalos regulares. O argumento é o intervalo em milissegundos.</div>
+          </div>
+        </div>
+
+        <div class="callout">
+          <strong>Atividade:</strong> cada aluno abre o patch da aula anterior. Adicionar um <code>[metro]</code> para automatizar a mudança de frequência e um <code>[print]</code> para inspecionar os valores — sem tocar no restante do patch.
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 2 -->
+    <div class="bloco fade-in">
+      <div class="bloco-time">
+        <div class="bloco-time-dur">30min</div>
+        <div class="bloco-time-label">Bloco 2</div>
+      </div>
+      <div class="bloco-line"></div>
+      <div class="bloco-dot"></div>
+      <div class="bloco-body">
+        <div class="bloco-header">
+          <div class="bloco-num">Bloco 02</div>
+          <h2>Instalação de bibliotecas externas</h2>
+        </div>
+
+        <p>O Pure Data Vanilla tem uma coleção de objetos nativos, mas seu ecossistema real está nas bibliotecas externas — conjuntos de objetos desenvolvidos pela comunidade que ampliam radicalmente as possibilidades do ambiente.</p>
+
+        <h3>Bibliotecas do curso</h3>
+        <div class="bibliotecas">
+          <div class="biblioteca">
+            <div class="biblioteca-nome">Cyclone</div>
+            <div class="biblioteca-desc">Conjunto de objetos compatíveis com Max/MSP. Traz operadores matemáticos, filtros e utilitários que não existem no PD nativo — essencial para síntese e processamento de sinal mais sofisticado.</div>
+            <div class="biblioteca-link"><a href="https://github.com/porres/pd-cyclone" target="_blank">GitHub ↗</a></div>
+          </div>
+          <div class="biblioteca">
+            <div class="biblioteca-nome">Pduino</div>
+            <div class="biblioteca-desc">Comunicação entre Pure Data e Arduino via protocolo Firmata. Permite ler sensores e controlar pinos do Arduino diretamente de dentro de um patch PD.</div>
+            <div class="biblioteca-link"><a href="https://github.com/pd-arduino/pduino" target="_blank">GitHub ↗</a></div>
+          </div>
+          <div class="biblioteca">
+            <div class="biblioteca-nome">GEM</div>
+            <div class="biblioteca-desc">Graphics Environment for Multimedia — renderização OpenGL em tempo real dentro do PD. Formas 3D, texturas, shaders e vídeo controlados pelo mesmo patch de áudio.</div>
+            <div class="biblioteca-link"><a href="https://gem.iem.at/" target="_blank">gem.iem.at ↗</a></div>
+          </div>
+        </div>
+
+        <h3>Como instalar — Deken (gerenciador nativo do PD)</h3>
+        <div class="steps">
+          <div class="step">
+            <div class="step-n">1</div>
+            <div class="step-text">No PD, abrir o gerenciador de pacotes: <code>Help → Find Externals</code></div>
+          </div>
+          <div class="step">
+            <div class="step-n">2</div>
+            <div class="step-text">Buscar <code>cyclone</code> — selecionar a versão mais recente e clicar em <em>Install</em></div>
+          </div>
+          <div class="step">
+            <div class="step-n">3</div>
+            <div class="step-text">Repetir para <code>pduino</code> e <code>GEM</code></div>
+          </div>
+          <div class="step">
+            <div class="step-n">4</div>
+            <div class="step-text">Reiniciar o PD após cada instalação — confirmar no console que a biblioteca foi carregada sem erros</div>
+          </div>
+          <div class="step">
+            <div class="step-n">5</div>
+            <div class="step-text">Para carregar uma biblioteca no patch: <code>[declare -lib cyclone]</code> no início do patch, ou configurar em <code>Edit → Preferences → Startup</code> para carregamento automático</div>
+          </div>
+        </div>
+
+        <div class="callout">
+          <strong>Atenção GEM:</strong> o GEM pode não estar disponível via Deken em todas as plataformas. Em caso de falha, instalar manualmente copiando a pasta da biblioteca para o diretório de externals do PD — geralmente <code>~/Documents/Pd/externals/</code> no Mac e <code>%AppData%\Pd\externals\</code> no Windows.
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 3 -->
+    <div class="bloco fade-in">
+      <div class="bloco-time">
+        <div class="bloco-time-dur">35min</div>
+        <div class="bloco-time-label">Bloco 3</div>
+      </div>
+      <div class="bloco-line"></div>
+      <div class="bloco-dot"></div>
+      <div class="bloco-body">
+        <div class="bloco-header">
+          <div class="bloco-num">Bloco 03</div>
+          <h2>Interfaces do computador — mouse, teclado e microfone</h2>
+        </div>
+
+        <p>Antes de conectar hardware externo, o próprio computador oferece três entradas de dados em tempo real que já permitem construir sistemas interativos completos: o mouse, o teclado e o microfone.</p>
+
+        <h3>Mouse</h3>
+        <div class="pd-objetos">
+          <div class="pd-objeto">
+            <div class="pd-objeto-nome">[mousestate]</div>
+            <div class="pd-objeto-desc">Retorna posição X e Y do cursor, além do estado dos botões. <em>Não precisa de biblioteca externa.</em></div>
+          </div>
+          <div class="pd-objeto">
+            <div class="pd-objeto-nome">[expr $f1 / 1920]</div>
+            <div class="pd-objeto-desc">Normaliza o valor de X (0 a resolução) para a faixa 0–1 — padrão para mapear para qualquer parâmetro.</div>
+          </div>
+        </div>
+
+        <div class="steps">
+          <div class="step">
+            <div class="step-n">1</div>
+            <div class="step-text">Criar <code>[mousestate]</code> e conectar as saídas a caixas numéricas — observar os valores mudando ao mover o mouse</div>
+          </div>
+          <div class="step">
+            <div class="step-n">2</div>
+            <div class="step-text">Normalizar X com <code>[/ 1920]</code> e mapear para frequência: <code>[* 800]</code> + <code>[+ 200]</code> — resultado: 200 a 1000 Hz conforme a posição horizontal</div>
+          </div>
+          <div class="step">
+            <div class="step-n">3</div>
+            <div class="step-text">Conectar o resultado ao inlet de frequência do <code>[osc~]</code> do patch anterior</div>
+          </div>
+        </div>
+
+        <h3>Teclado</h3>
+        <div class="pd-objetos">
+          <div class="pd-objeto">
+            <div class="pd-objeto-nome">[key]</div>
+            <div class="pd-objeto-desc">Retorna o código ASCII da tecla pressionada. Ativo enquanto o patch estiver em foco.</div>
+          </div>
+          <div class="pd-objeto">
+            <div class="pd-objeto-nome">[keyup]</div>
+            <div class="pd-objeto-desc">Retorna o código ASCII da tecla solta. Usado em conjunto com <code>[key]</code> para detectar duração do pressionamento.</div>
+          </div>
+          <div class="pd-objeto">
+            <div class="pd-objeto-nome">[keyname]</div>
+            <div class="pd-objeto-desc">Retorna o nome legível da tecla (ex: <em>space</em>, <em>Return</em>) em vez do código numérico.</div>
+          </div>
+        </div>
+
+        <div class="steps">
+          <div class="step">
+            <div class="step-n">1</div>
+            <div class="step-text">Criar <code>[key]</code> e conectar a um <code>[print]</code> — pressionar teclas e observar os códigos ASCII no console</div>
+          </div>
+          <div class="step">
+            <div class="step-n">2</div>
+            <div class="step-text">Usar <code>[select 32]</code> para detectar a barra de espaço (ASCII 32) e conectar ao <code>[toggle]</code> que liga o oscilador</div>
+          </div>
+          <div class="step">
+            <div class="step-n">3</div>
+            <div class="step-text">Mapear as teclas numéricas 1–5 (ASCII 49–53) para frequências predefinidas usando <code>[select 49 50 51 52 53]</code></div>
+          </div>
+        </div>
+
+        <h3>Microfone</h3>
+        <div class="pd-objetos">
+          <div class="pd-objeto">
+            <div class="pd-objeto-nome">[adc~]</div>
+            <div class="pd-objeto-desc">Analog-to-digital converter — entrada de áudio do sistema. Saída esquerda e direita em sinal contínuo <code>~</code>.</div>
+          </div>
+          <div class="pd-objeto">
+            <div class="pd-objeto-nome">[env~ 1024]</div>
+            <div class="pd-objeto-desc">Envelope follower — converte sinal de áudio em valor de amplitude em dB. O argumento é o tamanho da janela de análise.</div>
+          </div>
+          <div class="pd-objeto">
+            <div class="pd-objeto-nome">[mtof] / [ftom]</div>
+            <div class="pd-objeto-desc">Converte MIDI para Hz e vice-versa. Útil para mapear amplitude para altura de nota de forma musical.</div>
+          </div>
+        </div>
+
+        <div class="steps">
+          <div class="step">
+            <div class="step-n">1</div>
+            <div class="step-text">Criar <code>[adc~]</code> e conectar ao <code>[env~ 1024]</code> — observar os valores de amplitude em dB no número conectado à saída</div>
+          </div>
+          <div class="step">
+            <div class="step-n">2</div>
+            <div class="step-text">Normalizar para 0–1: <code>[/ 100]</code> — amplitude do microfone controlando o volume do oscilador via <code>[*~ ]</code></div>
+          </div>
+          <div class="step">
+            <div class="step-n">3</div>
+            <div class="step-text"><strong style="color:var(--accent)">Atividade:</strong> combinar mouse (frequência), teclado (on/off) e microfone (volume) em um único patch</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 4 -->
+    <div class="bloco fade-in">
+      <div class="bloco-time">
+        <div class="bloco-time-dur">25min</div>
+        <div class="bloco-time-label">Bloco 4</div>
+      </div>
+      <div class="bloco-line"></div>
+      <div class="bloco-dot"></div>
+      <div class="bloco-body">
+        <div class="bloco-header">
+          <div class="bloco-num">Bloco 04</div>
+          <h2>Síntese visual com GEM</h2>
+        </div>
+
+        <p>O GEM (Graphics Environment for Multimedia) é uma biblioteca que adiciona ao PD um pipeline de renderização OpenGL em tempo real. O mesmo patch que gera som pode controlar formas, cores e movimento em uma janela gráfica separada.</p>
+
+        <div class="conceito">
+          <div class="conceito-label">Conceito</div>
+          <div class="conceito-title">Cadeia de renderização no GEM</div>
+          <p>O GEM funciona em cadeia: um objeto <code>[gemwin]</code> cria a janela, <code>[gemhead]</code> inicia o pipeline de renderização, e objetos de geometria como <code>[sphere]</code>, <code>[rectangle]</code> ou <code>[circle]</code> são conectados abaixo. Atributos visuais — cor, posição, rotação, escala — chegam aos objetos por mensagens vindas do patch de controle.</p>
+          <p>A cadeia GEM é <em>declarativa</em>: cada frame é redesenhado com os valores atuais dos atributos. Isso é análogo ao <code>draw()</code> do p5.js, que veremos mais adiante.</p>
+        </div>
+
+        <h3>Objetos essenciais do GEM</h3>
+        <div class="pd-objetos">
+          <div class="pd-objeto">
+            <div class="pd-objeto-nome">[gemwin]</div>
+            <div class="pd-objeto-desc">Cria e controla a janela de renderização. Recebe mensagens <em>create</em> e <em>destroy</em>.</div>
+          </div>
+          <div class="pd-objeto">
+            <div class="pd-objeto-nome">[gemhead]</div>
+            <div class="pd-objeto-desc">Ponto de entrada do pipeline GEM. Tudo conectado abaixo é renderizado a cada frame.</div>
+          </div>
+          <div class="pd-objeto">
+            <div class="pd-objeto-nome">[sphere]</div>
+            <div class="pd-objeto-desc">Geometria 3D básica. Aceita raio como argumento e atributos de cor, posição e rotação.</div>
+          </div>
+          <div class="pd-objeto">
+            <div class="pd-objeto-nome">[translateXYZ]</div>
+            <div class="pd-objeto-desc">Move a geometria no espaço 3D. Recebe valores X, Y, Z na entrada.</div>
+          </div>
+          <div class="pd-objeto">
+            <div class="pd-objeto-nome">[color]</div>
+            <div class="pd-objeto-desc">Define cor RGBA da geometria. Valores de 0 a 1 para cada canal.</div>
+          </div>
+          <div class="pd-objeto">
+            <div class="pd-objeto-nome">[pix_video]</div>
+            <div class="pd-objeto-desc">Captura entrada de vídeo da câmera — permite usar o feed ao vivo como textura ou processá-lo em tempo real.</div>
+          </div>
+        </div>
+
+        <div class="steps">
+          <div class="step">
+            <div class="step-n">1</div>
+            <div class="step-text">Criar <code>[gemwin]</code> e enviar a mensagem <code>create</code> — a janela de renderização abre</div>
+          </div>
+          <div class="step">
+            <div class="step-n">2</div>
+            <div class="step-text">Montar a cadeia: <code>[gemhead]</code> → <code>[sphere 0.5]</code> — uma esfera aparece no centro da janela</div>
+          </div>
+          <div class="step">
+            <div class="step-n">3</div>
+            <div class="step-text">Inserir <code>[translateXYZ]</code> entre gemhead e sphere — conectar as saídas X e Y do <code>[mousestate]</code> normalizadas à entrada do translate</div>
+          </div>
+          <div class="step">
+            <div class="step-n">4</div>
+            <div class="step-text">Conectar a amplitude do microfone <code>[env~]</code> ao raio da esfera — a forma pulsa com o som ambiente</div>
+          </div>
+          <div class="step">
+            <div class="step-n">5</div>
+            <div class="step-text"><strong style="color:var(--accent)">Atividade:</strong> o mouse move a esfera, o microfone controla o tamanho, o teclado muda a cor via <code>[color]</code></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 5 -->
+    <div class="bloco fade-in">
+      <div class="bloco-time">
+        <div class="bloco-time-dur">20min</div>
+        <div class="bloco-time-label">Bloco 5</div>
+      </div>
+      <div class="bloco-line"></div>
+      <div class="bloco-dot"></div>
+      <div class="bloco-body">
+        <div class="bloco-header">
+          <div class="bloco-num">Bloco 05</div>
+          <h2>Introdução ao Arduino</h2>
+        </div>
+
+        <p>Arduino é uma plataforma de prototipagem eletrônica baseada em microcontrolador — um computador em miniatura dedicado a ler entradas físicas e controlar saídas elétricas. É o ponto de entrada mais comum para a interface analógico-digital.</p>
+
+        <div class="conceito">
+          <div class="conceito-label">Conceito</div>
+          <div class="conceito-title">O que é um microcontrolador</div>
+          <p>Ao contrário de um computador de propósito geral, um microcontrolador executa um único programa em loop contínuo — sem sistema operacional, sem múltiplos processos. Isso o torna previsível, rápido para responder a entradas físicas e muito mais simples de programar para tarefas de tempo real.</p>
+          <p>O Arduino abstrai o hardware com uma linguagem baseada em C++, tornando acessível o controle de pinos digitais, leitura de sensores analógicos e comunicação serial.</p>
+        </div>
+
+        <h3>Anatomia do Arduino Uno</h3>
+        <ul class="items">
+          <li><strong style="color:var(--text)">Pinos digitais (0–13)</strong> — leitura ou escrita de valores binários: 0V (LOW) ou 5V (HIGH). Os pinos com <em>~</em> suportam PWM — simulação de valores analógicos por pulso.</li>
+          <li><strong style="color:var(--text)">Pinos analógicos (A0–A5)</strong> — leitura de tensão entre 0 e 5V, convertida para valores de 0 a 1023 (10 bits de resolução).</li>
+          <li><strong style="color:var(--text)">5V e GND</strong> — alimentação e terra para sensores e componentes externos.</li>
+          <li><strong style="color:var(--text)">USB / Serial</strong> — comunicação com o computador. É por aqui que o Firmata transmite dados para o PD.</li>
+        </ul>
+
+        <h3>Estrutura básica de um programa Arduino</h3>
+        <div class="callout" style="font-family:var(--font-mono);font-size:13px;line-height:1.8">
+          <span style="color:var(--muted)">// setup() roda uma vez ao ligar</span><br>
+          <span style="color:var(--accent)">void</span> <span style="color:var(--text)">setup() {</span><br>
+          &nbsp;&nbsp;<span style="color:var(--muted)">Serial.begin(9600);</span><br>
+          &nbsp;&nbsp;<span style="color:var(--muted)">pinMode(13, OUTPUT);</span><br>
+          <span style="color:var(--text)">}</span><br><br>
+          <span style="color:var(--muted)">// loop() roda continuamente</span><br>
+          <span style="color:var(--accent)">void</span> <span style="color:var(--text)">loop() {</span><br>
+          &nbsp;&nbsp;<span style="color:var(--muted)">int valor = analogRead(A0);</span><br>
+          &nbsp;&nbsp;<span style="color:var(--muted)">Serial.println(valor);</span><br>
+          &nbsp;&nbsp;<span style="color:var(--muted)">delay(10);</span><br>
+          <span style="color:var(--text)">}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 6 -->
+    <div class="bloco fade-in">
+      <div class="bloco-time">
+        <div class="bloco-time-dur">15min</div>
+        <div class="bloco-time-label">Bloco 6</div>
+      </div>
+      <div class="bloco-line"></div>
+      <div class="bloco-dot"></div>
+      <div class="bloco-body">
+        <div class="bloco-header">
+          <div class="bloco-num">Bloco 06</div>
+          <h2>Subindo o firmware Firmata</h2>
+        </div>
+
+        <p>Firmata é um protocolo que transforma o Arduino em um dispositivo de I/O controlado pelo computador — em vez de executar um programa próprio, ele responde a comandos vindos do PD via porta serial. Para isso, o Arduino precisa receber o firmware Firmata uma única vez.</p>
+
+        <div class="conceito">
+          <div class="conceito-label">Conceito</div>
+          <div class="conceito-title">Firmata — inversão de controle</div>
+          <p>No uso convencional do Arduino, o programa roda no microcontrolador e o computador é passivo. Com Firmata, a lógica fica no computador — no caso, no patch PD — e o Arduino vira um periférico inteligente: lê sensores e aciona saídas sob comando externo. Essa inversão é o que torna possível integrar hardware físico a um patch audiovisual em tempo real.</p>
+        </div>
+
+        <h3>Passos para subir o Firmata</h3>
+        <div class="steps">
+          <div class="step">
+            <div class="step-n">1</div>
+            <div class="step-text">Baixar e instalar a Arduino IDE: <a href="https://www.arduino.cc/en/software" target="_blank" style="color:var(--accent);text-decoration:none">arduino.cc/en/software ↗</a></div>
+          </div>
+          <div class="step">
+            <div class="step-n">2</div>
+            <div class="step-text">Conectar o Arduino ao computador via USB — confirmar que a porta serial aparece em <code>Tools → Port</code></div>
+          </div>
+          <div class="step">
+            <div class="step-n">3</div>
+            <div class="step-text">Abrir o firmware: <code>File → Examples → Firmata → StandardFirmata</code></div>
+          </div>
+          <div class="step">
+            <div class="step-n">4</div>
+            <div class="step-text">Selecionar a placa correta em <code>Tools → Board</code> — para Arduino Uno, selecionar <em>Arduino Uno</em></div>
+          </div>
+          <div class="step">
+            <div class="step-n">5</div>
+            <div class="step-text">Clicar em <em>Upload</em> (→) — aguardar a confirmação <em>"Done uploading"</em> no console. O Arduino agora fala Firmata.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 7 -->
+    <div class="bloco fade-in">
+      <div class="bloco-time">
+        <div class="bloco-time-dur">35min</div>
+        <div class="bloco-time-label">Bloco 7</div>
+      </div>
+      <div class="bloco-dot" style="background:var(--accent2)"></div>
+      <div class="bloco-body">
+        <div class="bloco-header">
+          <div class="bloco-num">Bloco 07</div>
+          <h2>Integração de hardware com Pduino</h2>
+        </div>
+
+        <p>Com o Firmata no Arduino e a biblioteca Pduino instalada no PD, os dois ambientes se comunicam pela porta serial. Dados de sensores físicos entram no patch como mensagens — o mesmo tipo de dado que já vimos vindo do mouse e do teclado.</p>
+
+        <h3>Objetos do Pduino</h3>
+        <div class="pd-objetos">
+          <div class="pd-objeto">
+            <div class="pd-objeto-nome">[arduino]</div>
+            <div class="pd-objeto-desc">Objeto central da biblioteca. Estabelece a conexão com o Arduino via porta serial e expõe os dados dos pinos como saídas.</div>
+          </div>
+          <div class="pd-objeto">
+            <div class="pd-objeto-nome">[arduino-analog]</div>
+            <div class="pd-objeto-desc">Leitura dos pinos analógicos (A0–A5). Retorna valores de 0 a 1023 em tempo real.</div>
+          </div>
+          <div class="pd-objeto">
+            <div class="pd-objeto-nome">[arduino-digital]</div>
+            <div class="pd-objeto-desc">Leitura e escrita de pinos digitais. Recebe ou envia 0 ou 1.</div>
+          </div>
+        </div>
+
+        <h3>Conectando ao PD</h3>
+        <div class="steps">
+          <div class="step">
+            <div class="step-n">1</div>
+            <div class="step-text">Criar <code>[arduino]</code> no patch. Na mensagem de abertura da porta, especificar o caminho serial: ex. <code>[open /dev/ttyUSB0(</code> no Linux/Mac ou <code>[open COM3(</code> no Windows</div>
+          </div>
+          <div class="step">
+            <div class="step-n">2</div>
+            <div class="step-text">Enviar a mensagem de abertura via bang — observar no console se a conexão foi estabelecida</div>
+          </div>
+          <div class="step">
+            <div class="step-n">3</div>
+            <div class="step-text">Criar <code>[arduino-analog 0]</code> para ler o pino A0 — conectar saída a uma caixa numérica e variar o sensor (potenciômetro ou LDR)</div>
+          </div>
+          <div class="step">
+            <div class="step-n">4</div>
+            <div class="step-text">Normalizar o valor: <code>[/ 1023]</code> — resultado de 0 a 1, pronto para mapear a qualquer parâmetro do patch</div>
+          </div>
+          <div class="step">
+            <div class="step-n">5</div>
+            <div class="step-text"><strong style="color:var(--accent)">Atividade final:</strong> sensor físico controlando frequência do oscilador e posição da esfera no GEM — o loop analógico-digital completo em um único patch</div>
+          </div>
+        </div>
+
+        <div class="callout">
+          <strong>O que aconteceu:</strong> um valor físico — resistência de um potenciômetro ou incidência de luz num LDR — percorre o caminho: sensor → Arduino → Firmata → porta serial → Pduino → mensagem PD → parâmetro de síntese sonora e visual. Isso é a interface analógico-digital.
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <hr class="divider">
+
+  <h3 style="margin-top:0;margin-bottom:16px">Materiais de apoio</h3>
+  <div class="links-grid">
+    <a class="link-item" href="https://github.com/porres/pd-cyclone" target="_blank">
+      <span class="link-icon">↓</span>
+      <div class="link-body">
+        <div>Cyclone — GitHub</div>
+        <div class="link-desc">Biblioteca de objetos compatíveis com Max/MSP para o PD</div>
+      </div>
+      <span class="link-arrow">↗</span>
+    </a>
+    <a class="link-item" href="https://gem.iem.at/" target="_blank">
+      <span class="link-icon">↓</span>
+      <div class="link-body">
+        <div>GEM — Graphics Environment for Multimedia</div>
+        <div class="link-desc">Documentação oficial da biblioteca de gráficos do PD</div>
+      </div>
+      <span class="link-arrow">↗</span>
+    </a>
+    <a class="link-item" href="https://github.com/pd-arduino/pduino" target="_blank">
+      <span class="link-icon">↓</span>
+      <div class="link-body">
+        <div>Pduino — GitHub</div>
+        <div class="link-desc">Biblioteca de comunicação PD ↔ Arduino via Firmata</div>
+      </div>
+      <span class="link-arrow">↗</span>
+    </a>
+    <a class="link-item" href="https://www.arduino.cc/en/software" target="_blank">
+      <span class="link-icon">↓</span>
+      <div class="link-body">
+        <div>Arduino IDE — Download</div>
+        <div class="link-desc">Ambiente de desenvolvimento oficial do Arduino</div>
+      </div>
+      <span class="link-arrow">↗</span>
+    </a>
+    <a class="link-item" href="https://github.com/mxa/AudioVideoPatches" target="_blank">
+      <span class="link-icon">📁</span>
+      <div class="link-body">
+        <div>AudioVideoPatches — mxa</div>
+        <div class="link-desc">Coleção de patches Pure Data para áudio e vídeo — exemplos e referências</div>
+      </div>
+      <span class="link-arrow">↗</span>
+    </a>
+    <a class="link-item" href="http://msp.ucsd.edu/Pd_documentation/" target="_blank">
+      <span class="link-icon">📄</span>
+      <div class="link-body">
+        <div>Documentação oficial do Pure Data</div>
+        <div class="link-desc">Referência completa dos objetos nativos</div>
+      </div>
+      <span class="link-arrow">↗</span>
+    </a>
+  </div>
+
+</main>
+
+<script>
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.06 });
+document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+</script>
+<script src="nav.js"></script>
+</body>
+</html>
