@@ -12,7 +12,7 @@ const CURSO = {
       num: 2,
       titulo: "p5.js e uso consciente de IA",
       arquivo: "aula02.html",
-      disponivel: false,
+      disponivel: true,
     },
     {
       num: 3,
