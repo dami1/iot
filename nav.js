@@ -18,7 +18,7 @@ const CURSO = {
       num: 3,
       titulo: "Hardware e protocolos de comunicação",
       arquivo: "aula03.html",
-      disponivel: false,
+      disponivel: true,
     },
     {
       num: 4,
@@ -73,9 +73,9 @@ function injetarNav() {
         position: sticky;
         top: 0;
         z-index: 100;
-        background: rgba(14,14,13,.93);
+        background: rgba(248,247,244,.93);
         backdrop-filter: blur(12px);
-        border-bottom: 1px solid #2a2a26;
+        border-bottom: 1px solid #d8d4cc;
         padding: 0 48px;
         display: flex;
         align-items: center;
@@ -99,12 +99,12 @@ function injetarNav() {
         font-size: 10px;
         letter-spacing: .1em;
         text-transform: uppercase;
-        color: #e8651a;
+        color: #c84d0a;
         line-height: 1;
       }
       .cnav-author {
         font-size: 10px;
-        color: #555550;
+        color: #999990;
         line-height: 1;
       }
       .cnav-center {
@@ -123,13 +123,13 @@ function injetarNav() {
         width: 6px;
         height: 6px;
         border-radius: 50%;
-        background: #2a2a26;
+        background: #d8d4cc;
         text-decoration: none;
         transition: background .15s;
         flex-shrink: 0;
       }
       .cnav-dot.disponivel {
-        background: #3a3a34;
+        background: #b8b4ac;
         cursor: pointer;
       }
       .cnav-dot.disponivel:hover {
@@ -141,7 +141,7 @@ function injetarNav() {
       }
       .cnav-label {
         font-size: 10px;
-        color: #555550;
+        color: #999990;
         letter-spacing: .06em;
         white-space: nowrap;
       }
@@ -154,10 +154,10 @@ function injetarNav() {
         font-family: 'DM Mono', monospace;
         font-size: 11px;
         padding: 6px 12px;
-        border: 1px solid #2a2a26;
+        border: 1px solid #d8d4cc;
         border-radius: 3px;
         background: none;
-        color: #888880;
+        color: #666660;
         cursor: pointer;
         text-decoration: none;
         display: inline-flex;
@@ -167,8 +167,8 @@ function injetarNav() {
         white-space: nowrap;
       }
       .cnav-btn:hover {
-        border-color: #3a3a34;
-        color: #f0efe8;
+        border-color: #b8b4ac;
+        color: #18180f;
       }
       .cnav-btn.disabled {
         opacity: .25;
