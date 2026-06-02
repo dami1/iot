@@ -11,15 +11,15 @@
 html { scroll-behavior: smooth; }
 
 :root {
-  --bg: #0e0e0d;
-  --surface: #161614;
-  --surface2: #1e1e1b;
-  --border: #2a2a26;
-  --border2: #3a3a34;
-  --text: #f0efe8;
-  --muted: #888880;
-  --dim: #555550;
-  --accent: #e8651a;
+  --bg: #f8f7f4;
+  --surface: #ffffff;
+  --surface2: #f0ede8;
+  --border: #d8d4cc;
+  --border2: #b8b4ac;
+  --text: #18180f;
+  --muted: #666660;
+  --dim: #999990;
+  --accent: #c84d0a;
   --font-mono: 'DM Mono', monospace;
   --font-sans: 'DM Sans', sans-serif;
 }
@@ -42,7 +42,7 @@ header {
   justify-content: space-between;
   position: sticky;
   top: 0;
-  background: rgba(14,14,13,.92);
+  background: rgba(248,247,244,.92);
   backdrop-filter: blur(12px);
   z-index: 10;
 }
@@ -515,21 +515,21 @@ footer {
   <div class="semana-label fade-in" style="transition-delay:.3s">Semana 2 <span>Hardware e integração</span></div>
   <div class="aulas-grid fade-in" style="transition-delay:.34s">
 
-    <div class="aula-card locked">
+    <a class="aula-card available" href="aula03.html">
       <div class="aula-top">
         <span class="aula-num">Aula 03</span>
         <div class="aula-tags">
           <span class="aula-tag tag-hw">HW</span>
-          <span class="aula-tag tag-p5">p5</span>
+          <span class="aula-tag tag-pd">PD</span>
         </div>
       </div>
-      <div class="aula-title">Hardware e protocolos de comunicação</div>
-      <div class="aula-desc">Arduino e ESP32. Sensores básicos. Protocolos Serial, MIDI e OSC. Integração com p5.js via Web Serial — sensor controlando parâmetros visuais em tempo real.</div>
+      <div class="aula-title">Arduino, ESP32, Teensy e Firmata</div>
+      <div class="aula-desc">Microcontroladores: Arduino, ESP32 e Teensy — diferenças e usos. Estrutura de um sketch: setup(), loop(), delay(). Sketch Blink. Firmata e integração com Pure Data via Pduino.</div>
       <div class="aula-bottom">
         <span class="aula-dur">3h</span>
-        <span class="aula-lock">em breve</span>
+        <span class="aula-arrow">→</span>
       </div>
-    </div>
+    </a>
 
     <div class="aula-card locked">
       <div class="aula-top">

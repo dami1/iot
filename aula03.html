@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aula 3 — Arduino, ESP32, Teensy e Firmata</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f8f7f4;
+    --surface: #ffffff;
+    --surface2: #f0ede8;
+    --border: #d8d4cc;
+    --border2: #b8b4ac;
+    --text: #18180f;
+    --muted: #666660;
+    --dim: #999990;
+    --accent: #c84d0a;
+    --accent2: #a03a06;
+    --pd-orange: #c84d0a;
+    --font-mono: 'DM Mono', monospace;
+    --font-sans: 'DM Sans', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  main {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 0 32px 100px;
+  }
+
+  .hero {
+    padding: 56px 0 40px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 56px;
+  }
+
+  .hero-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .hero-eyebrow::after {
+    content: '';
+    height: 1px;
+    width: 40px;
+    background: var(--accent);
+    opacity: .4;
+    display: block;
+  }
+
+  h1 {
+    font-size: clamp(24px, 4vw, 36px);
+    font-weight: 300;
+    line-height: 1.2;
+    letter-spacing: -.02em;
+    color: var(--text);
+    margin-bottom: 20px;
+  }
+
+  h1 em { font-style: normal; color: var(--accent); }
+
+  .hero-meta { display: flex; gap: 20px; flex-wrap: wrap; }
+
+  .hero-meta span {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .hero-meta span::before { content: '·'; color: var(--accent); }
+
+  /* ── TIMELINE ── */
+  .timeline { display: flex; flex-direction: column; }
+
+  .bloco {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 0 28px;
+    position: relative;
+    padding-bottom: 60px;
+  }
+
+  .bloco:last-child { padding-bottom: 0; }
+  .bloco-time { padding-top: 4px; text-align: right; }
+  .bloco-time-label { font-family: var(--font-mono); font-size: 10px; color: var(--dim); }
+  .bloco-time-dur { font-family: var(--font-mono); font-size: 12px; color: var(--muted); font-weight: 500; }
+
+  .bloco-line {
+    position: absolute;
+    left: 80px;
+    top: 8px;
+    bottom: 0;
+    width: 1px;
+    background: var(--border);
+  }
+
+  .bloco:last-child .bloco-line { display: none; }
+
+  .bloco-dot {
+    position: absolute;
+    left: 76px;
+    top: 6px;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--bg);
+  }
+
+  .bloco-body { padding-left: 28px; }
+  .bloco-header { margin-bottom: 24px; }
+
+  .bloco-num {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  h2 { font-size: 20px; font-weight: 400; color: var(--text); letter-spacing: -.01em; line-height: 1.3; }
+
+  h3 {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    margin: 32px 0 14px;
+    font-family: var(--font-mono);
+  }
+
+  p { color: var(--text); margin-bottom: 14px; font-size: 15px; }
+
+  ul.items {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+
+  ul.items li {
+    display: flex;
+    gap: 12px;
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  ul.items li::before {
+    content: '→';
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    flex-shrink: 0;
+    margin-top: 3px;
+  }
+
+  /* ── BOARDS GRID ── */
+  .boards {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+
+  .board {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 18px 18px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: border-color .15s;
+  }
+
+  .board:hover { border-color: var(--border2); }
+
+  .board-name {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--accent);
+  }
+
+  .board-chip {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--dim);
+    letter-spacing: .06em;
+  }
+
+  .board-specs {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 4px;
+  }
+
+  .board-specs li {
+    font-size: 12px;
+    color: var(--muted);
+    display: flex;
+    gap: 8px;
+    line-height: 1.5;
+  }
+
+  .board-specs li::before {
+    content: '·';
+    color: var(--border2);
+    flex-shrink: 0;
+  }
+
+  .board-tag {
+    display: inline-block;
+    margin-top: 8px;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    padding: 2px 7px;
+    border-radius: 2px;
+    background: rgba(232,101,26,.1);
+    color: var(--accent);
+    letter-spacing: .05em;
+  }
+
+  /* ── CALLOUT ── */
+  .callout {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.65;
+  }
+
+  .callout strong { color: var(--accent); font-weight: 500; }
+
+  /* ── CODE BLOCK ── */
+  .code-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.85;
+    overflow-x: auto;
+  }
+
+  .code-block .c-comment { color: var(--dim); font-style: italic; }
+  .code-block .c-keyword { color: var(--accent); }
+  .code-block .c-type    { color: #7eb8f7; }
+  .code-block .c-fn      { color: #c8d880; }
+  .code-block .c-num     { color: #f0a060; }
+  .code-block .c-string  { color: #a8d8a0; }
+  .code-block .c-text    { color: var(--muted); }
+
+  .code-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--dim);
+    margin-bottom: 12px;
+  }
+
+  /* ── STEPS ── */
+  .steps { display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
+
+  .step { display: grid; grid-template-columns: 28px 1fr; gap: 14px; align-items: start; }
+
+  .step-n {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+
+  .step-text {
+    font-size: 14px;
+    color: var(--text);
+    padding-top: 4px;
+    line-height: 1.6;
+  }
+
+  .step-text code {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 1px 6px;
+    color: var(--pd-orange);
+  }
+
+  .step-text em { color: var(--muted); font-style: normal; }
+
+  /* ── PD OBJETOS ── */
+  .pd-objetos { display: flex; flex-direction: column; gap: 2px; margin-bottom: 24px; }
+
+  .pd-objeto {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .pd-objeto-nome {
+    padding: 10px 14px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--pd-orange);
+    border-right: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    background: rgba(232,101,26,.05);
+  }
+
+  .pd-objeto-desc {
+    padding: 10px 16px;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+    display: flex;
+    align-items: center;
+  }
+
+  .pd-objeto-desc em { color: var(--text); font-style: normal; }
+
+  /* ── CONCEITO ── */
+  .conceito {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+  }
+
+  .conceito-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+
+  .conceito-title { font-size: 17px; font-weight: 400; color: var(--text); margin-bottom: 10px; }
+
+  .conceito p { font-size: 14px; color: var(--muted); margin-bottom: 8px; line-height: 1.65; }
+  .conceito p:last-child { margin-bottom: 0; }
+  .conceito code {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 3px;
+    padding: 1px 6px;
+    color: var(--pd-orange);
+  }
+
+  /* ── LINHA EVOLUTIVA ── */
+  .evolucao {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2px;
+    margin-bottom: 24px;
+    position: relative;
+  }
+
+  .evolucao::before {
+    content: '';
+    position: absolute;
+    top: 36px;
+    left: 10%;
+    width: 80%;
+    height: 1px;
+    background: var(--border);
+    z-index: 0;
+  }
+
+  .evo-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+    z-index: 1;
+    padding: 0 8px 16px;
+  }
+
+  .evo-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 2px solid var(--border2);
+    flex-shrink: 0;
+    margin-top: 29px;
+    transition: border-color .15s;
+  }
+
+  .evo-item:last-child .evo-dot {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .evo-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 12px;
+    width: 100%;
+    text-align: center;
+  }
+
+  .evo-era {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--dim);
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .evo-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .evo-desc {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+
+  .evo-item:last-child .evo-card {
+    border-color: var(--accent);
+    background: rgba(200,77,10,.04);
+  }
+
+  .evo-item:last-child .evo-name { color: var(--accent); }
+
+  /* ── MÓDULOS GRID ── */
+  .modulos {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+
+  .modulo {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    transition: border-color .15s;
+  }
+
+  .modulo:hover { border-color: var(--border2); }
+
+  .modulo-nome {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--accent);
+  }
+
+  .modulo-tipo {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--dim);
+    text-transform: uppercase;
+    letter-spacing: .08em;
+  }
+
+  .modulo-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.55;
+    margin-top: 4px;
+  }
+
+  /* ── DIVIDER + LINKS ── */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 52px 0 36px; }
+  .links-grid { display: flex; flex-direction: column; gap: 6px; }
+
+  .link-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    text-decoration: none;
+    color: var(--text);
+    font-size: 13px;
+    transition: border-color .15s, background .15s;
+  }
+
+  .link-item:hover { border-color: var(--border2); background: var(--surface2); }
+  .link-icon { font-family: var(--font-mono); font-size: 13px; color: var(--accent); flex-shrink: 0; width: 20px; text-align: center; }
+  .link-desc { font-size: 11px; color: var(--muted); margin-top: 2px; font-family: var(--font-mono); }
+  .link-body { flex: 1; }
+  .link-arrow { font-size: 11px; color: var(--dim); margin-left: auto; }
+
+  /* ── FADE IN ── */
+  .fade-in { opacity: 0; transform: translateY(14px); transition: opacity .5s ease, transform .5s ease; }
+  .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 640px) {
+    main { padding: 0 18px 80px; }
+    .bloco { grid-template-columns: 60px 1fr; }
+    .boards { grid-template-columns: 1fr; }
+    .pd-objeto { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<main>
+
+  <div class="hero">
+    <div class="hero-eyebrow">Aula 03 · Semana 2 · 3 horas</div>
+    <h1>Arduino, ESP32, Teensy<br>e integração com <em>Firmata</em></h1>
+    <div class="hero-meta">
+      <span>Formato laboratório</span>
+      <span>Arduino IDE instalada</span>
+      <span>Arduino + cabo USB</span>
+      <span>Pd Vanilla + Pduino</span>
+    </div>
+  </div>
+
+  <div class="timeline">
+
+    <!-- BLOCO 1 -->
+    <div class="bloco fade-in">
+      <div class="bloco-time">
+        <div class="bloco-time-dur">40min</div>
+        <div class="bloco-time-label">Bloco 1</div>
+      </div>
+      <div class="bloco-line"></div>
+      <div class="bloco-dot"></div>
+      <div class="bloco-body">
+        <div class="bloco-header">
+          <div class="bloco-num">Bloco 01</div>
+          <h2>Microcontroladores — Arduino, ESP32 e Teensy</h2>
+        </div>
+
+        <h3>Uma linha evolutiva</h3>
+        <p>O microcontrolador é o resultado de oito décadas de miniaturização da eletrônica. Entender essa progressão ajuda a situar o Arduino no contexto maior da tecnologia.</p>
+
+        <div class="evolucao">
+          <div class="evo-item">
+            <div class="evo-card">
+              <div class="evo-era">Anos 1900–1950</div>
+              <div class="evo-name">Válvula</div>
+              <div class="evo-desc">Tubo de vidro que controla fluxo de elétrons. Amplifica e comuta sinais — base dos primeiros computadores e rádios. Frágil, quente, grande.</div>
+            </div>
+            <div class="evo-dot"></div>
+          </div>
+          <div class="evo-item">
+            <div class="evo-card">
+              <div class="evo-era">Anos 1950–1960</div>
+              <div class="evo-name">Transistor</div>
+              <div class="evo-desc">Substitui a válvula em silício sólido. Menor, mais rápido, muito mais eficiente. Permitiu a miniaturização dos circuitos eletrônicos.</div>
+            </div>
+            <div class="evo-dot"></div>
+          </div>
+          <div class="evo-item">
+            <div class="evo-card">
+              <div class="evo-era">Anos 1960–1980</div>
+              <div class="evo-name">Circuito integrado</div>
+              <div class="evo-desc">Dezenas, depois milhões de transistores gravados em uma única pastilha de silício. Possibilitou processadores, memória e toda a eletrônica digital moderna.</div>
+            </div>
+            <div class="evo-dot"></div>
+          </div>
+          <div class="evo-item">
+            <div class="evo-card">
+              <div class="evo-era">Anos 1970 → hoje</div>
+              <div class="evo-name">Microcontrolador</div>
+              <div class="evo-desc">Processador, memória e periféricos de I/O em um único chip. Programável, barato e onipresente — está em eletrodomésticos, automóveis, sensores e Arduino.</div>
+            </div>
+            <div class="evo-dot"></div>
+          </div>
+        </div>
+
+        <p>Um microcontrolador é um computador em miniatura dedicado a uma única tarefa: ler entradas físicas e controlar saídas elétricas. Ao contrário de um computador de propósito geral, roda um único programa em loop contínuo — sem sistema operacional, sem múltiplos processos. Isso o torna previsível e rápido para resposta em tempo real.</p>
+
+        <p>Três plataformas dominam o uso em projetos interativos, instalações e prototipagem de hardware:</p>
+
+        <div class="boards">
+          <div class="board">
+            <div class="board-name">Arduino Uno</div>
+            <div class="board-chip">ATmega328P · 16 MHz</div>
+            <ul class="board-specs">
+              <li>14 pinos digitais (6 PWM)</li>
+              <li>6 entradas analógicas</li>
+              <li>5V · 32KB flash</li>
+              <li>Serial via USB</li>
+              <li>Sem WiFi ou BT nativo</li>
+            </ul>
+            <span class="board-tag">porta de entrada</span>
+          </div>
+          <div class="board">
+            <div class="board-name">ESP32</div>
+            <div class="board-chip">Xtensa LX6 dual-core · 240 MHz</div>
+            <ul class="board-specs">
+              <li>34 pinos GPIO</li>
+              <li>18 entradas analógicas</li>
+              <li>3.3V · 4MB flash</li>
+              <li>WiFi 802.11 b/g/n nativo</li>
+              <li>Bluetooth 4.2 + BLE</li>
+            </ul>
+            <span class="board-tag">IoT e rede</span>
+          </div>
+          <div class="board">
+            <div class="board-name">Teensy 4.1</div>
+            <div class="board-chip">ARM Cortex-M7 · 600 MHz</div>
+            <ul class="board-specs">
+              <li>55 pinos digitais</li>
+              <li>18 entradas analógicas (12 bit)</li>
+              <li>3.3V · 8MB flash</li>
+              <li>USB MIDI/Audio nativo</li>
+              <li>SD card integrado</li>
+            </ul>
+            <span class="board-tag">áudio e MIDI</span>
+          </div>
+        </div>
+
+        <h3>Quando usar cada um</h3>
+        <ul class="items">
+          <li><strong style="color:var(--text)">Arduino Uno</strong> — aprendizado, prototipagem rápida, projetos simples com sensores e atuadores. Ecossistema de shields e tutoriais mais amplo. Ideal para começar.</li>
+          <li><strong style="color:var(--text)">ESP32</strong> — projetos que precisam de conectividade em rede: IoT, OSC via WiFi, MQTT, controle remoto. Substitui o Arduino quando a rede é essencial. Veremos nas aulas 6 e 7.</li>
+          <li><strong style="color:var(--text)">Teensy</strong> — projetos de áudio de alta qualidade, instrumentos MIDI, processamento em tempo real com baixa latência. A plataforma Teensy Audio Library permite síntese e efeitos diretamente no hardware.</li>
+        </ul>
+
+        <h3>Anatomia do Arduino Uno</h3>
+        <ul class="items">
+          <li><strong style="color:var(--text)">Pinos digitais 0–13</strong> — leitura ou escrita de valores binários: 0V (LOW) ou 5V (HIGH). Os marcados com ~ suportam PWM — modulação por largura de pulso, que simula valores analógicos.</li>
+          <li><strong style="color:var(--text)">Pinos analógicos A0–A5</strong> — leitura de tensão entre 0 e 5V, convertida para valores de 0 a 1023 (resolução de 10 bits).</li>
+          <li><strong style="color:var(--text)">5V e GND</strong> — alimentação e referência de terra para sensores e componentes externos.</li>
+          <li><strong style="color:var(--text)">Pino 13</strong> — tem um LED integrado na placa, útil para testes rápidos sem componentes externos.</li>
+          <li><strong style="color:var(--text)">USB / Serial (pinos 0 e 1)</strong> — comunicação com o computador. É por aqui que dados de sensores chegam ao PD via Firmata.</li>
+        </ul>
+
+        <h3>Módulos externos</h3>
+        <p>A grande vantagem do ecossistema Arduino está nos módulos prontos — placas com componentes já integrados que se conectam diretamente aos pinos via jumpers ou protocolos como I²C e SPI. Em vez de montar um circuito do zero, basta conectar o módulo e usar a biblioteca correspondente.</p>
+
+        <div class="modulos">
+          <div class="modulo">
+            <div class="modulo-nome">HC-SR04</div>
+            <div class="modulo-tipo">Sensor · Distância</div>
+            <div class="modulo-desc">Sensor ultrassônico. Mede distância de 2 cm a 4 m por pulso de som. Dois pinos: Trigger (disparo) e Echo (resposta).</div>
+          </div>
+          <div class="modulo">
+            <div class="modulo-nome">PIR HC-SR501</div>
+            <div class="modulo-tipo">Sensor · Presença</div>
+            <div class="modulo-desc">Detecta movimento por infravermelho passivo. Saída digital HIGH quando há movimento. Sensibilidade e tempo ajustáveis por trimpot.</div>
+          </div>
+          <div class="modulo">
+            <div class="modulo-nome">MPU-6050</div>
+            <div class="modulo-tipo">Sensor · IMU (I²C)</div>
+            <div class="modulo-desc">Acelerômetro e giroscópio de 6 eixos. Detecta orientação, gesto e vibração. Comunicação via I²C — usa apenas 2 fios além de alimentação.</div>
+          </div>
+          <div class="modulo">
+            <div class="modulo-nome">MAX4466 / MAX9814</div>
+            <div class="modulo-tipo">Sensor · Microfone</div>
+            <div class="modulo-desc">Microfone com amplificador integrado. Saída analógica proporcional ao volume sonoro — leitura direta no pino analógico.</div>
+          </div>
+          <div class="modulo">
+            <div class="modulo-nome">WS2812B (NeoPixel)</div>
+            <div class="modulo-tipo">Atuador · LED RGB</div>
+            <div class="modulo-desc">Fita ou matriz de LEDs RGB endereçáveis individualmente. Controle de cor e brilho de cada LED por um único pino digital.</div>
+          </div>
+          <div class="modulo">
+            <div class="modulo-nome">Servo SG90 / MG996R</div>
+            <div class="modulo-tipo">Atuador · Motor</div>
+            <div class="modulo-desc">Motor de posição controlado por PWM. O SG90 é leve e pequeno; o MG996R tem torque maior. Controlados pela biblioteca <em>Servo.h</em>.</div>
+          </div>
+          <div class="modulo">
+            <div class="modulo-nome">Relay 5V</div>
+            <div class="modulo-tipo">Atuador · Chave elétrica</div>
+            <div class="modulo-desc">Interruptor eletromecânico acionado por sinal digital do Arduino. Permite controlar cargas de alta tensão (lâmpadas, ventiladores) de forma isolada.</div>
+          </div>
+          <div class="modulo">
+            <div class="modulo-nome">SD card module</div>
+            <div class="modulo-tipo">Armazenamento · SPI</div>
+            <div class="modulo-desc">Leitura e escrita em cartão SD via protocolo SPI. Útil para gravar dados de sensores ou reproduzir arquivos de áudio com a biblioteca TMRpcm.</div>
+          </div>
+        </div>
+
+        <div class="callout">
+          <strong>Shields:</strong> uma categoria especial de módulos que se encaixam diretamente sobre o Arduino, ocupando todos os pinos de uma vez. Exemplos: Ethernet Shield (rede cabeada), Motor Shield (controle de motores DC), GSM Shield (rede celular). São empilháveis — vários shields podem ser combinados na mesma placa.
+        </div>
+      </div>
+    </div>
+    <div class="bloco fade-in">
+      <div class="bloco-time">
+        <div class="bloco-time-dur">40min</div>
+        <div class="bloco-time-label">Bloco 2</div>
+      </div>
+      <div class="bloco-line"></div>
+      <div class="bloco-dot"></div>
+      <div class="bloco-body">
+        <div class="bloco-header">
+          <div class="bloco-num">Bloco 02</div>
+          <h2>Estrutura básica de um sketch Arduino</h2>
+        </div>
+
+        <p>Na terminologia Arduino, um programa se chama <em>sketch</em>. Todo sketch tem a mesma estrutura obrigatória: duas funções que o ambiente chama automaticamente.</p>
+
+        <div class="conceito">
+          <div class="conceito-label">Conceito</div>
+          <div class="conceito-title">setup() e loop()</div>
+          <p><code>setup()</code> roda uma única vez quando o Arduino liga ou reinicia. É onde se configura o comportamento dos pinos, a velocidade da comunicação serial e qualquer inicialização necessária.</p>
+          <p><code>loop()</code> roda continuamente, em ciclo, enquanto o Arduino tiver energia. É o equivalente ao <code>draw()</code> do p5.js ou ao patch em execução do PD — o lugar onde o sistema responde ao mundo em tempo real.</p>
+        </div>
+
+        <h3>Tipos de dados essenciais</h3>
+        <ul class="items">
+          <li><strong style="color:var(--text)">int</strong> — número inteiro, de −32.768 a 32.767. Usado para leitura de sensores analógicos e contadores.</li>
+          <li><strong style="color:var(--text)">float</strong> — número decimal. Usado quando precisão fracionária é necessária — ex: mapeamento de valores.</li>
+          <li><strong style="color:var(--text)">bool</strong> — verdadeiro ou falso. Útil para flags e estados binários.</li>
+          <li><strong style="color:var(--text)">void</strong> — ausência de valor de retorno. Todas as funções que não retornam nada são declaradas como void.</li>
+        </ul>
+
+        <h3>Funções nativas mais usadas</h3>
+        <ul class="items">
+          <li><strong style="color:var(--text)">pinMode(pino, modo)</strong> — define se um pino é INPUT ou OUTPUT. Chamado no setup().</li>
+          <li><strong style="color:var(--text)">digitalWrite(pino, valor)</strong> — escreve HIGH ou LOW num pino digital.</li>
+          <li><strong style="color:var(--text)">digitalRead(pino)</strong> — lê o estado de um pino digital: HIGH ou LOW.</li>
+          <li><strong style="color:var(--text)">analogRead(pino)</strong> — lê a tensão de um pino analógico, retorna 0–1023.</li>
+          <li><strong style="color:var(--text)">analogWrite(pino, valor)</strong> — escreve um valor PWM (0–255) num pino com suporte a ~.</li>
+          <li><strong style="color:var(--text)">delay(ms)</strong> — pausa a execução por um número de milissegundos. Bloqueia o loop inteiro durante a pausa.</li>
+          <li><strong style="color:var(--text)">Serial.begin(baud)</strong> — inicia a comunicação serial à velocidade especificada. Normalmente 9600 ou 115200 baud.</li>
+          <li><strong style="color:var(--text)">Serial.println(valor)</strong> — envia um valor pela porta serial com quebra de linha. Essencial para debug e para enviar dados ao PD.</li>
+        </ul>
+
+        <h3>Sketch Blink — o "Hello, World" do Arduino</h3>
+        <p>Blink é o primeiro sketch de qualquer introdução ao Arduino: pisca o LED integrado no pino 13 em intervalos regulares. Simples, mas contém toda a estrutura fundamental.</p>
+
+        <div class="code-block">
+          <div class="code-label">Sketch · Blink com delay</div>
+          <span class="c-comment">// define o pino do LED como constante</span><br>
+          <span class="c-keyword">const</span> <span class="c-type">int</span> LED = <span class="c-num">13</span>;<br>
+          <br>
+          <span class="c-keyword">void</span> <span class="c-fn">setup</span>() {<br>
+          &nbsp;&nbsp;<span class="c-comment">// configura o pino 13 como saída</span><br>
+          &nbsp;&nbsp;<span class="c-fn">pinMode</span>(LED, <span class="c-keyword">OUTPUT</span>);<br>
+          }<br>
+          <br>
+          <span class="c-keyword">void</span> <span class="c-fn">loop</span>() {<br>
+          &nbsp;&nbsp;<span class="c-fn">digitalWrite</span>(LED, <span class="c-keyword">HIGH</span>); <span class="c-comment">// liga o LED</span><br>
+          &nbsp;&nbsp;<span class="c-fn">delay</span>(<span class="c-num">1000</span>);               <span class="c-comment">// aguarda 1 segundo</span><br>
+          &nbsp;&nbsp;<span class="c-fn">digitalWrite</span>(LED, <span class="c-keyword">LOW</span>);  <span class="c-comment">// desliga o LED</span><br>
+          &nbsp;&nbsp;<span class="c-fn">delay</span>(<span class="c-num">1000</span>);               <span class="c-comment">// aguarda 1 segundo</span><br>
+          }
+        </div>
+
+        <div class="callout">
+          <strong>O problema do delay():</strong> enquanto o Arduino executa <code>delay(1000)</code>, ele fica completamente parado — não lê sensores, não responde a entradas, não envia dados pela serial. Para projetos interativos onde responsividade importa, o padrão correto é usar <code>millis()</code> para medir o tempo decorrido sem bloquear o loop. Veremos isso quando integrarmos com o Firmata.
+        </div>
+
+        <h3>Variação — lendo um sensor analógico</h3>
+        <div class="code-block">
+          <div class="code-label">Sketch · leitura de potenciômetro no pino A0</div>
+          <span class="c-type">int</span> valor = <span class="c-num">0</span>;<br>
+          <br>
+          <span class="c-keyword">void</span> <span class="c-fn">setup</span>() {<br>
+          &nbsp;&nbsp;<span class="c-fn">Serial.begin</span>(<span class="c-num">9600</span>);<br>
+          }<br>
+          <br>
+          <span class="c-keyword">void</span> <span class="c-fn">loop</span>() {<br>
+          &nbsp;&nbsp;valor = <span class="c-fn">analogRead</span>(<span class="c-keyword">A0</span>); <span class="c-comment">// 0 a 1023</span><br>
+          &nbsp;&nbsp;<span class="c-fn">Serial.println</span>(valor);   <span class="c-comment">// envia pela serial</span><br>
+          &nbsp;&nbsp;<span class="c-fn">delay</span>(<span class="c-num">10</span>);                <span class="c-comment">// ~100 leituras por segundo</span><br>
+          }
+        </div>
+
+        <div class="steps">
+          <div class="step">
+            <div class="step-n">1</div>
+            <div class="step-text">Abrir a Arduino IDE — criar um novo sketch: <code>File → New</code></div>
+          </div>
+          <div class="step">
+            <div class="step-n">2</div>
+            <div class="step-text">Digitar o sketch Blink acima. Selecionar a placa: <code>Tools → Board → Arduino Uno</code></div>
+          </div>
+          <div class="step">
+            <div class="step-n">3</div>
+            <div class="step-text">Selecionar a porta: <code>Tools → Port → /dev/ttyUSB0</code> (Linux/Mac) ou <code>COM3</code> (Windows)</div>
+          </div>
+          <div class="step">
+            <div class="step-n">4</div>
+            <div class="step-text">Fazer upload: botão → ou <code>Ctrl+U</code>. O LED do pino 13 começa a piscar.</div>
+          </div>
+          <div class="step">
+            <div class="step-n">5</div>
+            <div class="step-text"><strong style="color:var(--accent)">Atividade:</strong> alterar os valores de delay — 500ms, 100ms, 50ms. O que acontece abaixo de ~20ms? Substituir o valor fixo por uma variável e observar.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 3 -->
+    <div class="bloco fade-in">
+      <div class="bloco-time">
+        <div class="bloco-time-dur">30min</div>
+        <div class="bloco-time-label">Bloco 3</div>
+      </div>
+      <div class="bloco-line"></div>
+      <div class="bloco-dot"></div>
+      <div class="bloco-body">
+        <div class="bloco-header">
+          <div class="bloco-num">Bloco 03</div>
+          <h2>Firmata — inversão de controle</h2>
+        </div>
+
+        <p>Firmata é um protocolo que transforma o Arduino em um periférico controlado pelo computador. Em vez de executar um programa próprio, o Arduino com Firmata responde a comandos vindos do software host — no caso, o Pure Data — via porta serial.</p>
+
+        <div class="conceito">
+          <div class="conceito-label">Conceito</div>
+          <div class="conceito-title">Inversão de controle</div>
+          <p>No uso convencional, a lógica roda no Arduino e o computador é passivo. Com Firmata, a lógica fica no computador — no patch PD — e o Arduino vira um dispositivo de I/O inteligente: lê sensores e aciona saídas sob comando externo em tempo real.</p>
+          <p>Essa inversão é o que permite integrar hardware físico a um sistema audiovisual sem ter que reescrever o firmware toda vez que a lógica muda. A criatividade fica do lado do PD; o Arduino só executa.</p>
+        </div>
+
+        <h3>Subindo o StandardFirmata</h3>
+        <div class="steps">
+          <div class="step">
+            <div class="step-n">1</div>
+            <div class="step-text">Na Arduino IDE, abrir o exemplo: <code>File → Examples → Firmata → StandardFirmata</code></div>
+          </div>
+          <div class="step">
+            <div class="step-n">2</div>
+            <div class="step-text">Confirmar que a placa e a porta estão corretas em <code>Tools</code></div>
+          </div>
+          <div class="step">
+            <div class="step-n">3</div>
+            <div class="step-text">Fazer upload. O sketch original (Blink) é substituído — o LED para de piscar e o Arduino fica aguardando comandos.</div>
+          </div>
+          <div class="step">
+            <div class="step-n">4</div>
+            <div class="step-text"><em>Não fechar a Arduino IDE ainda</em> — confirmar a porta serial que aparece em <code>Tools → Port</code> para usar no PD.</div>
+          </div>
+        </div>
+
+        <div class="callout">
+          <strong>Atenção:</strong> a porta serial do Arduino não pode ser usada por dois programas ao mesmo tempo. Antes de abrir a conexão no PD, fechar o Serial Monitor da Arduino IDE se estiver aberto — os dois travam a porta simultaneamente e nenhum recebe dados.
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 4 -->
+    <div class="bloco fade-in">
+      <div class="bloco-time">
+        <div class="bloco-time-dur">50min</div>
+        <div class="bloco-time-label">Bloco 4</div>
+      </div>
+      <div class="bloco-dot" style="background:var(--accent2)"></div>
+      <div class="bloco-body">
+        <div class="bloco-header">
+          <div class="bloco-num">Bloco 04</div>
+          <h2>Integração Arduino ↔ Pure Data via Pduino</h2>
+        </div>
+
+        <p>Com o Firmata no Arduino e a biblioteca Pduino instalada no PD, os dois ambientes se comunicam pela porta serial. Dados de sensores físicos chegam ao patch como mensagens — o mesmo tipo de dado que já vimos vindo do mouse, do teclado e do microfone.</p>
+
+        <h3>Objetos do Pduino no PD</h3>
+        <div class="pd-objetos">
+          <div class="pd-objeto">
+            <div class="pd-objeto-nome">[arduino]</div>
+            <div class="pd-objeto-desc">Objeto central. Recebe mensagem <code>open</code> com o caminho da porta serial e estabelece a conexão com o Firmata.</div>
+          </div>
+          <div class="pd-objeto">
+            <div class="pd-objeto-nome">[arduino-analog]</div>
+            <div class="pd-objeto-desc">Leitura de pinos analógicos (A0–A5). Retorna valores de 0 a 1023 em tempo real conforme o sensor varia.</div>
+          </div>
+          <div class="pd-objeto">
+            <div class="pd-objeto-nome">[arduino-digital]</div>
+            <div class="pd-objeto-desc">Leitura e escrita de pinos digitais. Recebe ou envia 0 (LOW) ou 1 (HIGH).</div>
+          </div>
+          <div class="pd-objeto">
+            <div class="pd-objeto-nome">[arduino-sysex]</div>
+            <div class="pd-objeto-desc">Comunicação bidirecional avançada via SysEx — para dados mais complexos além de leitura simples de pinos.</div>
+          </div>
+        </div>
+
+        <h3>Protoboard — montagem sem solda</h3>
+        <p>A protoboard (ou breadboard) é uma placa de prototipagem que permite montar circuitos eletrônicos temporários sem solda. Os componentes e fios são inseridos nos furos e conectados internamente por trilhas de metal.</p>
+
+        <div class="conceito">
+          <div class="conceito-label">Como funciona</div>
+          <div class="conceito-title">Organização interna da protoboard</div>
+          <p>A protoboard tem dois tipos de trilhas internas. As <strong style="color:var(--text)">linhas horizontais</strong> nas bordas superior e inferior — marcadas com + e − — são os barramentos de alimentação: todos os furos de uma mesma linha estão conectados entre si. São usados para distribuir 5V e GND pelo circuito.</p>
+          <p>As <strong style="color:var(--text)">colunas verticais</strong> na área central são os pontos de conexão de componentes: cada coluna de 5 furos (separadas pelo canal central) está conectada internamente. Inserir dois componentes na mesma coluna os conecta eletricamente — sem fio, sem solda.</p>
+          <p>O <strong style="color:var(--text)">canal central</strong> divide a protoboard ao meio e interrompe a conexão — é por onde se encaixam chips e componentes com dois lados de pinos (como CIs e alguns sensores).</p>
+        </div>
+
+        <ul class="items">
+          <li><strong style="color:var(--text)">Fio jumper macho-macho</strong> — conecta pontos da protoboard entre si ou com pinos do Arduino.</li>
+          <li><strong style="color:var(--text)">Fio jumper macho-fêmea</strong> — conecta a protoboard a pinos com header fêmea, como os do Arduino.</li>
+          <li>Nunca inserir dois terminais do mesmo componente na mesma coluna — os pinos ficariam em curto-circuito internamente.</li>
+          <li>Para visualizar e documentar circuitos montados em protoboard, o software <a href="https://fritzing.org" target="_blank" style="color:var(--accent);text-decoration:none">Fritzing ↗</a> gera diagramas visuais fiéis ao layout físico.</li>
+        </ul>
+
+        <h3>Montagem do circuito — potenciômetro</h3>
+        <ul class="items">
+          <li>Terminal esquerdo do potenciômetro → barramento <strong style="color:var(--text)">GND</strong> da protoboard → GND do Arduino</li>
+          <li>Terminal direito do potenciômetro → barramento <strong style="color:var(--text)">5V</strong> da protoboard → 5V do Arduino</li>
+          <li>Terminal central (wiper) → fio jumper → pino <strong style="color:var(--text)">A0</strong> do Arduino</li>
+        </ul>
+
+        <div class="callout">
+          <strong>Por que o potenciômetro:</strong> é um divisor de tensão variável. Ao girar o eixo, a tensão no pino A0 varia continuamente de 0 a 5V — que o Arduino converte para 0 a 1023. É o sensor mais simples e previsível para começar a entender a leitura analógica.
+        </div>
+
+        <h3>Patch PD — lendo o sensor</h3>
+        <div class="steps">
+          <div class="step">
+            <div class="step-n">1</div>
+            <div class="step-text">Instalar o Pduino via Deken se ainda não estiver: <code>Help → Find Externals → pduino</code></div>
+          </div>
+          <div class="step">
+            <div class="step-n">2</div>
+            <div class="step-text">Criar <code>[arduino]</code> no patch. Criar uma mensagem com o caminho da porta: <code>[open /dev/ttyUSB0(</code> — ajustar conforme o sistema</div>
+          </div>
+          <div class="step">
+            <div class="step-n">3</div>
+            <div class="step-text">Conectar a mensagem ao <code>[arduino]</code> e disparar com bang. Observar no console se a conexão foi confirmada.</div>
+          </div>
+          <div class="step">
+            <div class="step-n">4</div>
+            <div class="step-text">Criar <code>[arduino-analog 0]</code> — a saída emite o valor do pino A0 em tempo real. Conectar a uma caixa numérica e girar o potenciômetro.</div>
+          </div>
+          <div class="step">
+            <div class="step-n">5</div>
+            <div class="step-text">Normalizar: <code>[/ 1023]</code> — resultado de 0 a 1. Mapear para frequência: <code>[* 800]</code> + <code>[+ 200]</code> → conectar ao <code>[osc~]</code>.</div>
+          </div>
+          <div class="step">
+            <div class="step-n">6</div>
+            <div class="step-text">Conectar o mesmo valor normalizado à posição X da esfera no GEM via <code>[translateXYZ]</code> — o sensor move som e visual simultaneamente.</div>
+          </div>
+          <div class="step">
+            <div class="step-n">7</div>
+            <div class="step-text"><strong style="color:var(--accent)">Atividade final:</strong> trocar o potenciômetro por um LDR (sensor de luz). O circuito é o mesmo: LDR + resistor de 10kΩ em divisor de tensão no pino A0. Cobrir e descobrir o sensor — o patch responde à luz ambiente.</div>
+          </div>
+        </div>
+
+        <div class="callout">
+          <strong>O loop completo:</strong> grandeza física (resistência variável) → tensão elétrica → leitura analógica 0–1023 → Firmata via serial → Pduino → mensagem PD → parâmetro de síntese sonora e posição visual. Isso é a interface analógico-digital.
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <hr class="divider">
+
+  <h3 style="margin-top:0;margin-bottom:16px">Materiais de apoio</h3>
+  <div class="links-grid">
+    <a class="link-item" href="https://fritzing.org" target="_blank">
+      <span class="link-icon">↓</span>
+      <div class="link-body">
+        <div>Fritzing</div>
+        <div class="link-desc">Software para documentar e visualizar circuitos em protoboard, esquemático e PCB</div>
+      </div>
+      <span class="link-arrow">↗</span>
+    </a>
+    <a class="link-item" href="https://www.arduino.cc/en/software" target="_blank">
+      <span class="link-icon">↓</span>
+      <div class="link-body">
+        <div>Arduino IDE — Download</div>
+        <div class="link-desc">Ambiente de desenvolvimento oficial do Arduino</div>
+      </div>
+      <span class="link-arrow">↗</span>
+    </a>
+    <a class="link-item" href="https://www.arduino.cc/reference/en/" target="_blank">
+      <span class="link-icon">📄</span>
+      <div class="link-body">
+        <div>Arduino Language Reference</div>
+        <div class="link-desc">Referência completa de funções, tipos e estruturas da linguagem</div>
+      </div>
+      <span class="link-arrow">↗</span>
+    </a>
+    <a class="link-item" href="https://github.com/firmata/arduino" target="_blank">
+      <span class="link-icon">📁</span>
+      <div class="link-body">
+        <div>Firmata — GitHub</div>
+        <div class="link-desc">Protocolo e firmware para comunicação Arduino ↔ host</div>
+      </div>
+      <span class="link-arrow">↗</span>
+    </a>
+    <a class="link-item" href="https://github.com/pd-arduino/pduino" target="_blank">
+      <span class="link-icon">📁</span>
+      <div class="link-body">
+        <div>Pduino — GitHub</div>
+        <div class="link-desc">Biblioteca de comunicação PD ↔ Arduino via Firmata</div>
+      </div>
+      <span class="link-arrow">↗</span>
+    </a>
+    <a class="link-item" href="https://www.pjrc.com/teensy/" target="_blank">
+      <span class="link-icon">↗</span>
+      <div class="link-body">
+        <div>Teensy — PJRC</div>
+        <div class="link-desc">Documentação oficial do Teensy e da Teensy Audio Library</div>
+      </div>
+      <span class="link-arrow">↗</span>
+    </a>
+    <a class="link-item" href="https://docs.espressif.com/projects/arduino-esp32/en/latest/" target="_blank">
+      <span class="link-icon">📄</span>
+      <div class="link-body">
+        <div>ESP32 Arduino Core — Documentação</div>
+        <div class="link-desc">Guia oficial para programar o ESP32 com a Arduino IDE</div>
+      </div>
+      <span class="link-arrow">↗</span>
+    </a>
+  </div>
+
+</main>
+
+<script>
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.06 });
+document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+</script>
+<script src="nav.js"></script>
+</body>
+</html>
