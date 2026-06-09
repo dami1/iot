@@ -462,7 +462,82 @@
 
         <p>Ao contrário do Pure Data, onde o programa é um grafo de objetos conectados, em p5.js o programa é um texto — uma sequência de instruções em JavaScript que o navegador interpreta e executa. Os mesmos conceitos de objeto, método e atributo da aula 1 aparecem aqui de forma explícita no código.</p>
 
-        <div class="conceito">
+        <h3>Estrutura de arquivos de um projeto p5.js</h3>
+        <p>Um projeto p5.js é uma pasta com três arquivos que trabalham juntos. O navegador carrega o <code>index.html</code>, que por sua vez puxa o CSS e o JavaScript.</p>
+
+        <div class="fn-grid">
+          <div class="fn-row">
+            <div class="fn-name">index.html</div>
+            <div class="fn-desc">O ponto de entrada — o arquivo que o navegador abre. Define a estrutura da página, carrega as bibliotecas externas (p5.js, ml5.js) via tags <code>&lt;script&gt;</code>, e inclui o sketch.</div>
+          </div>
+          <div class="fn-row">
+            <div class="fn-name">sketch.js</div>
+            <div class="fn-desc">O programa em si. Contém obrigatoriamente as funções <code>setup()</code> e <code>draw()</code>. É aqui que toda a lógica interativa é escrita.</div>
+          </div>
+          <div class="fn-row">
+            <div class="fn-name">style.css</div>
+            <div class="fn-desc">Estilização da página HTML ao redor do canvas — fundo, margens, tipografia. Opcional: o canvas p5 tem seu próprio sistema de estilos interno via funções como <code>fill()</code> e <code>stroke()</code>.</div>
+          </div>
+        </div>
+
+        <h3>index.html — estrutura mínima</h3>
+        <p>Todo projeto p5.js começa com um <code>index.html</code> que carrega as bibliotecas antes do sketch. A ordem dos scripts importa — p5.js precisa estar carregado antes do <code>sketch.js</code>.</p>
+
+        <div class="code-block">
+          <div class="code-label">index.html · estrutura mínima</div>
+          &lt;!DOCTYPE html&gt;<br>
+          &lt;<span class="c-keyword">html</span> lang=<span class="c-string">"pt-BR"</span>&gt;<br>
+          &lt;<span class="c-keyword">head</span>&gt;<br>
+          &nbsp;&nbsp;&lt;<span class="c-keyword">meta</span> charset=<span class="c-string">"UTF-8"</span>&gt;<br>
+          &nbsp;&nbsp;&lt;<span class="c-keyword">meta</span> name=<span class="c-string">"viewport"</span> content=<span class="c-string">"width=device-width, initial-scale=1.0"</span>&gt;<br>
+          &nbsp;&nbsp;<span class="c-comment">&lt;!-- biblioteca p5.js --&gt;</span><br>
+          &nbsp;&nbsp;&lt;<span class="c-keyword">script</span> src=<span class="c-string">"https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.0/p5.min.js"</span>&gt;&lt;/<span class="c-keyword">script</span>&gt;<br>
+          &nbsp;&nbsp;<span class="c-comment">&lt;!-- biblioteca de som (opcional) --&gt;</span><br>
+          &nbsp;&nbsp;&lt;<span class="c-keyword">script</span> src=<span class="c-string">"https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.0/addons/p5.sound.min.js"</span>&gt;&lt;/<span class="c-keyword">script</span>&gt;<br>
+          &nbsp;&nbsp;<span class="c-comment">&lt;!-- estilo da página --&gt;</span><br>
+          &nbsp;&nbsp;&lt;<span class="c-keyword">link</span> rel=<span class="c-string">"stylesheet"</span> href=<span class="c-string">"style.css"</span>&gt;<br>
+          &lt;/<span class="c-keyword">head</span>&gt;<br>
+          &lt;<span class="c-keyword">body</span>&gt;<br>
+          &nbsp;&nbsp;<span class="c-comment">&lt;!-- o canvas é inserido aqui pelo p5.js automaticamente --&gt;</span><br>
+          &nbsp;&nbsp;&lt;<span class="c-keyword">script</span> src=<span class="c-string">"sketch.js"</span>&gt;&lt;/<span class="c-keyword">script</span>&gt;<br>
+          &lt;/<span class="c-keyword">body</span>&gt;<br>
+          &lt;/<span class="c-keyword">html</span>&gt;
+        </div>
+
+        <h3>index.html — com ml5.js para visão computacional</h3>
+        <div class="code-block">
+          <div class="code-label">index.html · com ml5 v1 (handPose, bodyPose) e ml5 v0.12 (YOLO)</div>
+          <span class="c-comment">&lt;!-- ml5 versão 1 — handPose, bodyPose, faceMesh --&gt;</span><br>
+          &lt;<span class="c-keyword">script</span> src=<span class="c-string">"https://unpkg.com/ml5@1/dist/ml5.min.js"</span>&gt;&lt;/<span class="c-keyword">script</span>&gt;<br>
+          <br>
+          <span class="c-comment">&lt;!-- ml5 versão 0.12 — objectDetector (YOLO / CocoSSD) --&gt;</span><br>
+          &lt;<span class="c-keyword">script</span> src=<span class="c-string">"https://unpkg.com/ml5@0.12.2/dist/ml5.min.js"</span>&gt;&lt;/<span class="c-keyword">script</span>&gt;<br>
+          <br>
+          <span class="c-comment">&lt;!-- usar apenas UM dos dois acima no mesmo projeto --&gt;</span>
+        </div>
+
+        <h3>style.css — centralizando o canvas</h3>
+        <p>Por padrão o p5.js insere o canvas no canto superior esquerdo da página com uma pequena margem. O CSS abaixo centraliza o canvas e remove o scroll causado pela margem padrão do body.</p>
+
+        <div class="code-block">
+          <div class="code-label">style.css · centralizar canvas na página</div>
+          <span class="c-keyword">body</span> {<br>
+          &nbsp;&nbsp;<span class="c-text">margin: 0;</span><br>
+          &nbsp;&nbsp;<span class="c-text">background: #f0ede8;</span><br>
+          &nbsp;&nbsp;<span class="c-text">display: flex;</span><br>
+          &nbsp;&nbsp;<span class="c-text">justify-content: center;</span><br>
+          &nbsp;&nbsp;<span class="c-text">align-items: center;</span><br>
+          &nbsp;&nbsp;<span class="c-text">min-height: 100vh;</span><br>
+          }<br>
+          <br>
+          <span class="c-keyword">canvas</span> {<br>
+          &nbsp;&nbsp;<span class="c-text">display: block;</span><br>
+          }
+        </div>
+
+        <div class="callout">
+          <strong>Editor online:</strong> em <a href="https://editor.p5js.org" target="_blank" style="color:var(--accent);text-decoration:none">editor.p5js.org</a> os três arquivos já existem na aba lateral — basta clicar em cada um. Para adicionar bibliotecas externas, editar o <code>index.html</code> inserindo a tag <code>&lt;script&gt;</code> antes do <code>sketch.js</code>. Para projetos locais com VS Code, instalar a extensão <em>Live Server</em> para servir os arquivos corretamente (navegadores bloqueiam acesso a arquivos locais via protocolo <code>file://</code>).
+        </div>
           <div class="conceito-label">Estrutura fundamental</div>
           <div class="conceito-title">setup() e draw()</div>
           <p>Todo sketch p5.js tem a mesma estrutura obrigatória — idêntica ao Arduino em conceito. <code>setup()</code> roda uma vez ao iniciar: configura o canvas, define tamanho, inicializa variáveis. <code>draw()</code> roda em loop contínuo — por padrão 60 vezes por segundo — redesenhando a cena a cada frame.</p>
@@ -823,55 +898,58 @@
       <div class="bloco-body">
         <div class="bloco-header">
           <div class="bloco-num">Bloco 05</div>
-          <h2>Integração em sketch — ml5.js handPose</h2>
+          <h2>Sketches completos com câmera e ML</h2>
         </div>
 
-        <p>Um sketch completo que usa a câmera como sensor de gestos: ml5.js detecta a posição das mãos em tempo real e os dados dos 21 pontos de cada mão controlam elementos visuais no canvas.</p>
+        <p>Os três sketches a seguir usam a câmera como sensor. Cada um requer que o ml5.js esteja carregado no <code>index.html</code> — e o último requer o ml5 versão 0.12 por incompatibilidade do <code>objectDetector</code> com ml5 v1.</p>
+
+        <div class="callout">
+          <strong>index.html — ml5 v1 (handPose e bodyPose):</strong><br>
+          <code style="font-family:var(--font-mono);font-size:12px">&lt;script src="https://unpkg.com/ml5@1/dist/ml5.min.js"&gt;&lt;/script&gt;</code><br><br>
+          <strong>index.html — ml5 v0.12 (YOLO objectDetector):</strong><br>
+          <code style="font-family:var(--font-mono);font-size:12px">&lt;script src="https://unpkg.com/ml5@0.12.2/dist/ml5.min.js"&gt;&lt;/script&gt;</code>
+        </div>
+
+        <h3>Sketch 1 — handPose</h3>
+        <p>Detecta 21 pontos por mão em tempo real. A câmera e os pontos são espelhados, mas o texto permanece legível porque é desenhado fora da transformação de espelho.</p>
 
         <div class="code-block">
-          <div class="code-label">sketch.js · handPose — posição dos dedos controlando círculos</div>
+          <div class="code-label">sketch.js · handPose — 21 pontos por mão, câmera espelhada</div>
           <span class="c-keyword">let</span> cam, handPose, maos = [];<br>
           <br>
           <span class="c-keyword">function</span> <span class="c-fn">preload</span>() {<br>
-          &nbsp;&nbsp;<span class="c-comment">// carrega o modelo antes do setup()</span><br>
-          &nbsp;&nbsp;handPose = ml5.<span class="c-fn">handPose</span>({ flipped: <span class="c-keyword">true</span> });<br>
+          &nbsp;&nbsp;handPose = ml5.<span class="c-fn">handPose</span>({ flipped: <span class="c-keyword">true</span> }, modelPronto);<br>
+          }<br>
+          <br>
+          <span class="c-keyword">function</span> <span class="c-fn">modelPronto</span>() {<br>
+          &nbsp;&nbsp;handPose.<span class="c-fn">detectStart</span>(cam, (r) =&gt; { maos = r; });<br>
           }<br>
           <br>
           <span class="c-keyword">function</span> <span class="c-fn">setup</span>() {<br>
           &nbsp;&nbsp;<span class="c-fn">createCanvas</span>(<span class="c-num">640</span>, <span class="c-num">480</span>);<br>
           &nbsp;&nbsp;cam = <span class="c-fn">createCapture</span>(VIDEO);<br>
-          &nbsp;&nbsp;cam.<span class="c-fn">size</span>(<span class="c-num">640</span>, <span class="c-num">480</span>);<br>
-          &nbsp;&nbsp;cam.<span class="c-fn">hide</span>();<br>
-          &nbsp;&nbsp;<span class="c-comment">// inicia a detecção e guarda resultados em maos[]</span><br>
-          &nbsp;&nbsp;handPose.<span class="c-fn">detectStart</span>(cam, (resultado) =&gt; { maos = resultado; });<br>
+          &nbsp;&nbsp;cam.<span class="c-fn">size</span>(<span class="c-num">640</span>, <span class="c-num">480</span>); cam.<span class="c-fn">hide</span>();<br>
           }<br>
           <br>
           <span class="c-keyword">function</span> <span class="c-fn">draw</span>() {<br>
+          &nbsp;&nbsp;<span class="c-comment">// espelha só a imagem</span><br>
+          &nbsp;&nbsp;<span class="c-fn">push</span>();<br>
+          &nbsp;&nbsp;<span class="c-fn">translate</span>(width, <span class="c-num">0</span>); <span class="c-fn">scale</span>(-<span class="c-num">1</span>, <span class="c-num">1</span>);<br>
           &nbsp;&nbsp;<span class="c-fn">image</span>(cam, <span class="c-num">0</span>, <span class="c-num">0</span>);<br>
+          &nbsp;&nbsp;<span class="c-fn">pop</span>();<br>
           &nbsp;&nbsp;<br>
           &nbsp;&nbsp;<span class="c-keyword">for</span> (<span class="c-keyword">let</span> mao <span class="c-keyword">of</span> maos) {<br>
-          &nbsp;&nbsp;&nbsp;&nbsp;<span class="c-keyword">for</span> (<span class="c-keyword">let</span> ponto <span class="c-keyword">of</span> mao.keypoints) {<br>
-          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="c-fn">fill</span>(<span class="c-num">200</span>, <span class="c-num">77</span>, <span class="c-num">10</span>);<br>
-          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="c-fn">noStroke</span>();<br>
-          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="c-fn">circle</span>(ponto.x, ponto.y, <span class="c-num">10</span>);<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="c-keyword">for</span> (<span class="c-keyword">let</span> p <span class="c-keyword">of</span> mao.keypoints) {<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="c-fn">fill</span>(<span class="c-num">200</span>, <span class="c-num">77</span>, <span class="c-num">10</span>); <span class="c-fn">noStroke</span>();<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="c-fn">circle</span>(p.x, p.y, <span class="c-num">10</span>);<br>
           &nbsp;&nbsp;&nbsp;&nbsp;}<br>
           &nbsp;&nbsp;}<br>
           }
         </div>
 
-        <h3>Estrutura dos dados retornados</h3>
-        <ul class="items">
-          <li>O array <code>maos[]</code> contém um objeto por mão detectada — normalmente até 2.</li>
-          <li>Cada objeto tem <code>keypoints[]</code> — array de 21 objetos com propriedades <code>x</code>, <code>y</code>, <code>z</code> e <code>name</code> (ex: <em>index_finger_tip</em>, <em>thumb_tip</em>…).</li>
-          <li>As coordenadas <code>x</code> e <code>y</code> já estão no espaço do canvas — prontas para usar em <code>circle()</code>, <code>line()</code> ou qualquer função de desenho.</li>
-          <li>O parâmetro <code>flipped: true</code> espelha horizontalmente — essencial para que o movimento da mão corresponda ao que o usuário vê.</li>
-        </ul>
+        <h3>Sketch 2 — bodyPose</h3>
+        <p>Detecta 33 pontos do corpo e desenha o esqueleto completo com linhas de conexão entre as articulações.</p>
 
-        <div class="callout">
-          <strong>Atividade:</strong> usar as coordenadas da ponta do dedo indicador (<code>name === 'index_finger_tip'</code>) para controlar a frequência de um oscilador via Web Audio API — ou exportar os dados via OSC para um patch Pure Data usando a biblioteca p5.serialport. O gesto vira interface audiovisual.
-        </div>
-
-        <h3>Variação — bodyPose</h3>
         <div class="code-block">
           <div class="code-label">sketch.js · bodyPose — esqueleto completo</div>
           <span class="c-keyword">let</span> cam, bodyPose, corpos = [], conexoes;<br>
@@ -885,24 +963,124 @@
           &nbsp;&nbsp;cam = <span class="c-fn">createCapture</span>(VIDEO);<br>
           &nbsp;&nbsp;cam.<span class="c-fn">size</span>(<span class="c-num">640</span>, <span class="c-num">480</span>); cam.<span class="c-fn">hide</span>();<br>
           &nbsp;&nbsp;bodyPose.<span class="c-fn">detectStart</span>(cam, (r) =&gt; { corpos = r; });<br>
-          &nbsp;&nbsp;conexoes = bodyPose.<span class="c-fn">getSkeleton</span>(); <span class="c-comment">// pares de pontos conectados</span><br>
+          &nbsp;&nbsp;conexoes = bodyPose.<span class="c-fn">getSkeleton</span>();<br>
           }<br>
           <br>
           <span class="c-keyword">function</span> <span class="c-fn">draw</span>() {<br>
+          &nbsp;&nbsp;<span class="c-fn">push</span>();<br>
+          &nbsp;&nbsp;<span class="c-fn">translate</span>(width, <span class="c-num">0</span>); <span class="c-fn">scale</span>(-<span class="c-num">1</span>, <span class="c-num">1</span>);<br>
           &nbsp;&nbsp;<span class="c-fn">image</span>(cam, <span class="c-num">0</span>, <span class="c-num">0</span>);<br>
+          &nbsp;&nbsp;<span class="c-fn">pop</span>();<br>
           &nbsp;&nbsp;<span class="c-keyword">for</span> (<span class="c-keyword">let</span> corpo <span class="c-keyword">of</span> corpos) {<br>
-          &nbsp;&nbsp;&nbsp;&nbsp;<span class="c-comment">// desenha as conexões do esqueleto</span><br>
           &nbsp;&nbsp;&nbsp;&nbsp;<span class="c-keyword">for</span> (<span class="c-keyword">let</span> [a, b] <span class="c-keyword">of</span> conexoes) {<br>
           &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="c-fn">stroke</span>(<span class="c-num">200</span>, <span class="c-num">77</span>, <span class="c-num">10</span>); <span class="c-fn">strokeWeight</span>(<span class="c-num">2</span>);<br>
           &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="c-fn">line</span>(a.x, a.y, b.x, b.y);<br>
           &nbsp;&nbsp;&nbsp;&nbsp;}<br>
-          &nbsp;&nbsp;&nbsp;&nbsp;<span class="c-comment">// desenha os pontos</span><br>
           &nbsp;&nbsp;&nbsp;&nbsp;<span class="c-keyword">for</span> (<span class="c-keyword">let</span> p <span class="c-keyword">of</span> corpo.keypoints) {<br>
           &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="c-fn">fill</span>(<span class="c-num">255</span>); <span class="c-fn">noStroke</span>();<br>
           &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="c-fn">circle</span>(p.x, p.y, <span class="c-num">8</span>);<br>
           &nbsp;&nbsp;&nbsp;&nbsp;}<br>
           &nbsp;&nbsp;}<br>
           }
+        </div>
+
+        <h3>Sketch 3 — YOLO detecção de objetos</h3>
+        <p>Detecta objetos em tempo real com bounding boxes coloridas por categoria. Requer ml5 v0.12 — o <code>objectDetector</code> foi removido do ml5 v1 e ainda não foi reintegrado de forma estável. A câmera é espelhada mas os labels são desenhados fora da transformação, evitando que o texto fique invertido.</p>
+
+        <div class="code-block">
+          <div class="code-label">sketch.js · YOLO — detecção de objetos com categorias coloridas (ml5 v0.12)</div>
+          <span class="c-keyword">let</span> cam, detector, objetos = [];<br>
+          <br>
+          <span class="c-comment">// cores por supercategoria COCO</span><br>
+          <span class="c-keyword">const</span> categorias = {<br>
+          &nbsp;&nbsp;<span class="c-string">'person'</span>: [<span class="c-num">220</span>, <span class="c-num">60</span>, <span class="c-num">10</span>],<br>
+          &nbsp;&nbsp;<span class="c-string">'cat'</span>: [<span class="c-num">30</span>, <span class="c-num">160</span>, <span class="c-num">80</span>], <span class="c-string">'dog'</span>: [<span class="c-num">30</span>, <span class="c-num">160</span>, <span class="c-num">80</span>], <span class="c-string">'bird'</span>: [<span class="c-num">30</span>, <span class="c-num">160</span>, <span class="c-num">80</span>],<br>
+          &nbsp;&nbsp;<span class="c-string">'car'</span>: [<span class="c-num">30</span>, <span class="c-num">100</span>, <span class="c-num">200</span>], <span class="c-string">'bus'</span>: [<span class="c-num">30</span>, <span class="c-num">100</span>, <span class="c-num">200</span>], <span class="c-string">'truck'</span>: [<span class="c-num">30</span>, <span class="c-num">100</span>, <span class="c-num">200</span>],<br>
+          &nbsp;&nbsp;<span class="c-string">'chair'</span>: [<span class="c-num">160</span>, <span class="c-num">80</span>, <span class="c-num">180</span>], <span class="c-string">'couch'</span>: [<span class="c-num">160</span>, <span class="c-num">80</span>, <span class="c-num">180</span>],<br>
+          &nbsp;&nbsp;<span class="c-string">'laptop'</span>: [<span class="c-num">180</span>, <span class="c-num">140</span>, <span class="c-num">0</span>], <span class="c-string">'cell phone'</span>: [<span class="c-num">180</span>, <span class="c-num">140</span>, <span class="c-num">0</span>], <span class="c-string">'tv'</span>: [<span class="c-num">180</span>, <span class="c-num">140</span>, <span class="c-num">0</span>],<br>
+          &nbsp;&nbsp;<span class="c-string">'bottle'</span>: [<span class="c-num">200</span>, <span class="c-num">160</span>, <span class="c-num">0</span>], <span class="c-string">'cup'</span>: [<span class="c-num">200</span>, <span class="c-num">160</span>, <span class="c-num">0</span>], <span class="c-string">'pizza'</span>: [<span class="c-num">200</span>, <span class="c-num">160</span>, <span class="c-num">0</span>],<br>
+          };<br>
+          <br>
+          <span class="c-keyword">function</span> <span class="c-fn">corDe</span>(label) {<br>
+          &nbsp;&nbsp;<span class="c-keyword">return</span> categorias[label] || [<span class="c-num">100</span>, <span class="c-num">100</span>, <span class="c-num">100</span>];<br>
+          }<br>
+          <br>
+          <span class="c-keyword">function</span> <span class="c-fn">setup</span>() {<br>
+          &nbsp;&nbsp;<span class="c-fn">createCanvas</span>(<span class="c-num">320</span>, <span class="c-num">240</span>);<br>
+          &nbsp;&nbsp;<span class="c-fn">textFont</span>(<span class="c-string">'monospace'</span>);<br>
+          &nbsp;&nbsp;cam = <span class="c-fn">createCapture</span>(VIDEO);<br>
+          &nbsp;&nbsp;cam.<span class="c-fn">size</span>(<span class="c-num">320</span>, <span class="c-num">240</span>); cam.<span class="c-fn">hide</span>();<br>
+          &nbsp;&nbsp;detector = ml5.<span class="c-fn">objectDetector</span>(<span class="c-string">'yolo'</span>, modeloPronto);<br>
+          }<br>
+          <br>
+          <span class="c-keyword">function</span> <span class="c-fn">modeloPronto</span>() {<br>
+          &nbsp;&nbsp;<span class="c-keyword">if</span> (cam.elt.readyState &gt;= <span class="c-num">2</span>) {<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="c-fn">detectarLoop</span>();<br>
+          &nbsp;&nbsp;} <span class="c-keyword">else</span> {<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;cam.elt.<span class="c-fn">addEventListener</span>(<span class="c-string">'loadeddata'</span>, detectarLoop, { once: <span class="c-keyword">true</span> });<br>
+          &nbsp;&nbsp;}<br>
+          }<br>
+          <br>
+          <span class="c-keyword">function</span> <span class="c-fn">detectarLoop</span>() {<br>
+          &nbsp;&nbsp;detector.<span class="c-fn">detect</span>(cam, (err, r) =&gt; {<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="c-keyword">if</span> (!err) objetos = r;<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="c-fn">detectarLoop</span>();<br>
+          &nbsp;&nbsp;});<br>
+          }<br>
+          <br>
+          <span class="c-keyword">function</span> <span class="c-fn">draw</span>() {<br>
+          &nbsp;&nbsp;<span class="c-comment">// espelha só a imagem</span><br>
+          &nbsp;&nbsp;<span class="c-fn">push</span>();<br>
+          &nbsp;&nbsp;<span class="c-fn">translate</span>(width, <span class="c-num">0</span>); <span class="c-fn">scale</span>(-<span class="c-num">1</span>, <span class="c-num">1</span>);<br>
+          &nbsp;&nbsp;<span class="c-fn">image</span>(cam, <span class="c-num">0</span>, <span class="c-num">0</span>);<br>
+          &nbsp;&nbsp;<span class="c-fn">pop</span>();<br>
+          &nbsp;&nbsp;<br>
+          &nbsp;&nbsp;<span class="c-keyword">for</span> (<span class="c-keyword">let</span> obj <span class="c-keyword">of</span> objetos) {<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="c-comment">// espelha só o X do bounding box</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="c-keyword">let</span> x = width - obj.x - obj.width;<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="c-keyword">let</span> c = <span class="c-fn">corDe</span>(obj.label);<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="c-keyword">let</span> tag = obj.label + <span class="c-string">'  '</span> + <span class="c-fn">nf</span>(obj.confidence * <span class="c-num">100</span>, <span class="c-num">0</span>, <span class="c-num">0</span>) + <span class="c-string">'%'</span>;<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="c-keyword">let</span> tagW = tag.length * <span class="c-num">7</span> + <span class="c-num">10</span>;<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="c-comment">// fundo semitransparente</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="c-fn">noStroke</span>(); <span class="c-fn">fill</span>(c[<span class="c-num">0</span>], c[<span class="c-num">1</span>], c[<span class="c-num">2</span>], <span class="c-num">40</span>);<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="c-fn">rect</span>(x, obj.y, obj.width, obj.height);<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="c-comment">// borda</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="c-fn">noFill</span>(); <span class="c-fn">stroke</span>(c[<span class="c-num">0</span>], c[<span class="c-num">1</span>], c[<span class="c-num">2</span>]); <span class="c-fn">strokeWeight</span>(<span class="c-num">2</span>);<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="c-fn">rect</span>(x, obj.y, obj.width, obj.height);<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="c-comment">// tag dentro da box, canto superior esquerdo</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="c-fn">noStroke</span>(); <span class="c-fn">fill</span>(c[<span class="c-num">0</span>], c[<span class="c-num">1</span>], c[<span class="c-num">2</span>]);<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="c-fn">rect</span>(x, obj.y, tagW, <span class="c-num">18</span>, <span class="c-num">0</span>, <span class="c-num">0</span>, <span class="c-num">2</span>, <span class="c-num">0</span>);<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="c-fn">fill</span>(<span class="c-num">255</span>); <span class="c-fn">textSize</span>(<span class="c-num">11</span>); <span class="c-fn">textAlign</span>(LEFT, TOP);<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="c-fn">text</span>(tag, x + <span class="c-num">4</span>, obj.y + <span class="c-num">3</span>);<br>
+          &nbsp;&nbsp;}<br>
+          }
+        </div>
+
+        <h3>Documentação das classes utilizadas</h3>
+
+        <div class="fn-grid">
+          <div class="fn-row"><div class="fn-name">push() / pop()</div><div class="fn-desc">Salva e restaura o estado do canvas — transformações, cores, estilos. Tudo dentro do bloco push/pop é isolado do restante do draw().</div></div>
+          <div class="fn-row"><div class="fn-name">translate(x, y)</div><div class="fn-desc">Desloca a origem do sistema de coordenadas. <code>translate(width, 0)</code> move a origem para o canto direito — necessário antes do espelho.</div></div>
+          <div class="fn-row"><div class="fn-name">scale(x, y)</div><div class="fn-desc">Escala o canvas. <code>scale(-1, 1)</code> inverte o eixo X — espelha horizontalmente tudo que for desenhado depois.</div></div>
+          <div class="fn-row"><div class="fn-name">image(el, x, y)</div><div class="fn-desc">Desenha uma imagem ou frame de vídeo no canvas. O elemento pode ser um objeto p5.Element (como o retornado por createCapture).</div></div>
+          <div class="fn-row"><div class="fn-name">createCapture(VIDEO)</div><div class="fn-desc">Acessa a câmera do dispositivo e retorna um elemento de vídeo. Solicita permissão ao navegador na primeira execução.</div></div>
+          <div class="fn-row"><div class="fn-name">cam.elt</div><div class="fn-desc">Propriedade que expõe o elemento HTML nativo (&lt;video&gt;) por baixo do objeto p5. Necessário para acessar eventos nativos como <code>loadeddata</code> e a propriedade <code>readyState</code>.</div></div>
+          <div class="fn-row"><div class="fn-name">readyState</div><div class="fn-desc">Propriedade nativa do &lt;video&gt;. Valor ≥ 2 indica que há pelo menos um frame disponível para processamento — seguro para iniciar a inferência.</div></div>
+          <div class="fn-row"><div class="fn-name">ml5.handPose(opts, cb)</div><div class="fn-desc">Carrega o modelo de detecção de mãos. <code>flipped: true</code> espelha as coordenadas. O callback <code>cb</code> é chamado quando o modelo termina de carregar.</div></div>
+          <div class="fn-row"><div class="fn-name">.detectStart(cam, cb)</div><div class="fn-desc">Inicia detecção contínua no elemento de vídeo. O callback é chamado a cada inferência com o array de resultados. Não bloqueia o draw().</div></div>
+          <div class="fn-row"><div class="fn-name">keypoints[]</div><div class="fn-desc">Array de pontos detectados. Cada objeto tem <code>x</code>, <code>y</code>, <code>z</code> e <code>name</code> (ex: <em>index_finger_tip</em>, <em>left_shoulder</em>). Coordenadas já no espaço do canvas.</div></div>
+          <div class="fn-row"><div class="fn-name">getSkeleton()</div><div class="fn-desc">Retorna array de pares de keypoints que formam os ossos do esqueleto — ex: [[ombro_esq, cotovelo_esq], ...]. Usado para desenhar linhas de conexão.</div></div>
+          <div class="fn-row"><div class="fn-name">ml5.objectDetector(m, cb)</div><div class="fn-desc">Carrega modelo de detecção de objetos. Aceita <code>'yolo'</code> ou <code>'cocossd'</code>. Disponível em ml5 v0.12 — removido do ml5 v1.</div></div>
+          <div class="fn-row"><div class="fn-name">detector.detect(cam, cb)</div><div class="fn-desc">Executa uma inferência no frame atual. O callback recebe <code>(erro, resultados[])</code>. Chamar recursivamente dentro do callback cria o loop de detecção contínua.</div></div>
+          <div class="fn-row"><div class="fn-name">obj.x / obj.y / obj.width / obj.height</div><div class="fn-desc">Coordenadas e dimensões do bounding box em pixels — prontas para usar em <code>rect(x, y, w, h)</code>.</div></div>
+          <div class="fn-row"><div class="fn-name">obj.label / obj.confidence</div><div class="fn-desc">Nome da categoria detectada (ex: <em>'person'</em>) e confiança de 0 a 1. <code>nf(obj.confidence * 100, 0, 0)</code> formata como percentagem inteira.</div></div>
+          <div class="fn-row"><div class="fn-name">nf(n, digits, decimals)</div><div class="fn-desc">Formata número: <code>nf(94.7, 0, 0)</code> → <em>'95'</em>. O segundo argumento é dígitos inteiros mínimos, o terceiro é casas decimais.</div></div>
+          <div class="fn-row"><div class="fn-name">textAlign(horiz, vert)</div><div class="fn-desc">Define o alinhamento do texto. <code>textAlign(LEFT, TOP)</code> faz a âncora do texto ser o canto superior esquerdo — útil para posicionar labels sobre coordenadas exatas.</div></div>
+        </div>
+
+        <div class="callout">
+          <strong>Atividade:</strong> partindo do sketch do handPose, usar as coordenadas da ponta do indicador (<code>name === 'index_finger_tip'</code>) para controlar a frequência de um oscilador via Web Audio API — ou exportar os dados via OSC para um patch Pure Data. O gesto vira interface audiovisual.
         </div>
       </div>
     </div>
