@@ -22,9 +22,9 @@ const CURSO = {
     },
     {
       num: 4,
-      titulo: "Integração, sensores complexos e estética da interface",
+      titulo: "Introdução ao p5.js",
       arquivo: "aula04.html",
-      disponivel: false,
+      disponivel: true,
     },
     {
       num: 5,

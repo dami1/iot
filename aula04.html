@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aula 4 — Introdução ao p5.js</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f8f7f4;
+    --surface: #ffffff;
+    --surface2: #f0ede8;
+    --border: #d8d4cc;
+    --border2: #b8b4ac;
+    --text: #18180f;
+    --muted: #666660;
+    --dim: #999990;
+    --accent: #c84d0a;
+    --accent2: #a03a06;
+    --font-mono: 'DM Mono', monospace;
+    --font-sans: 'DM Sans', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  main { max-width: 780px; margin: 0 auto; padding: 0 32px 100px; }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 56px 0 40px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 56px;
+  }
+
+  .hero-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .hero-eyebrow::after {
+    content: '';
+    height: 1px;
+    width: 40px;
+    background: var(--accent);
+    opacity: .4;
+    display: block;
+  }
+
+  h1 {
+    font-size: clamp(24px, 4vw, 36px);
+    font-weight: 300;
+    line-height: 1.2;
+    letter-spacing: -.02em;
+    color: var(--text);
+    margin-bottom: 20px;
+  }
+
+  h1 em { font-style: normal; color: var(--accent); }
+
+  .hero-meta { display: flex; gap: 20px; flex-wrap: wrap; }
+  .hero-meta span {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .hero-meta span::before { content: '·'; color: var(--accent); }
+
+  /* ── TIMELINE ── */
+  .timeline { display: flex; flex-direction: column; }
+
+  .bloco {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 0 28px;
+    position: relative;
+    padding-bottom: 60px;
+  }
+
+  .bloco:last-child { padding-bottom: 0; }
+  .bloco-time { padding-top: 4px; text-align: right; }
+  .bloco-time-label { font-family: var(--font-mono); font-size: 10px; color: var(--dim); }
+  .bloco-time-dur { font-family: var(--font-mono); font-size: 12px; color: var(--muted); font-weight: 500; }
+
+  .bloco-line {
+    position: absolute;
+    left: 80px;
+    top: 8px;
+    bottom: 0;
+    width: 1px;
+    background: var(--border);
+  }
+
+  .bloco:last-child .bloco-line { display: none; }
+
+  .bloco-dot {
+    position: absolute;
+    left: 76px;
+    top: 6px;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--bg);
+  }
+
+  .bloco-body { padding-left: 28px; }
+  .bloco-header { margin-bottom: 24px; }
+
+  .bloco-num {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  h2 { font-size: 20px; font-weight: 400; color: var(--text); letter-spacing: -.01em; line-height: 1.3; }
+
+  h3 {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    margin: 32px 0 14px;
+    font-family: var(--font-mono);
+  }
+
+  p { color: var(--text); margin-bottom: 14px; font-size: 15px; }
+
+  ul.items {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+
+  ul.items li {
+    display: flex;
+    gap: 12px;
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  ul.items li::before {
+    content: '→';
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    flex-shrink: 0;
+    margin-top: 3px;
+  }
+
+  /* ── CALLOUT ── */
+  .callout {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.65;
+  }
+
+  .callout strong { color: var(--accent); font-weight: 500; }
+
+  /* ── CODE BLOCK ── */
+  .code-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.9;
+    overflow-x: auto;
+  }
+
+  .code-block .c-comment { color: var(--dim); font-style: italic; }
+  .code-block .c-keyword { color: var(--accent); font-weight: 500; }
+  .code-block .c-fn      { color: #5a7a3a; }
+  .code-block .c-num     { color: #a05020; }
+  .code-block .c-string  { color: #507a50; }
+  .code-block .c-text    { color: var(--muted); }
+
+  .code-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--dim);
+    margin-bottom: 14px;
+  }
+
+  /* ── STEPS ── */
+  .steps { display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
+
+  .step { display: grid; grid-template-columns: 28px 1fr; gap: 14px; align-items: start; }
+
+  .step-n {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+
+  .step-text {
+    font-size: 14px;
+    color: var(--text);
+    padding-top: 4px;
+    line-height: 1.6;
+  }
+
+  .step-text code {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 1px 6px;
+    color: var(--accent);
+  }
+
+  .step-text em { color: var(--muted); font-style: normal; }
+
+  /* ── FUNÇÕES GRID ── */
+  .fn-grid { display: flex; flex-direction: column; gap: 2px; margin-bottom: 24px; }
+
+  .fn-row {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .fn-name {
+    padding: 10px 14px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--accent);
+    border-right: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    background: rgba(200,77,10,.04);
+  }
+
+  .fn-desc {
+    padding: 10px 16px;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+    display: flex;
+    align-items: center;
+  }
+
+  .fn-desc em { color: var(--text); font-style: normal; }
+
+  /* ── BIBLIOTECA CARDS ── */
+  .libs { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+
+  .lib {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 20px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px 20px;
+    align-items: start;
+    transition: border-color .15s;
+  }
+
+  .lib:hover { border-color: var(--border2); }
+
+  .lib-name {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--accent);
+    margin-bottom: 3px;
+  }
+
+  .lib-sub {
+    font-size: 11px;
+    font-family: var(--font-mono);
+    color: var(--dim);
+    margin-bottom: 8px;
+  }
+
+  .lib-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+    grid-column: 1;
+  }
+
+  .lib-link {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--accent);
+    text-decoration: none;
+    white-space: nowrap;
+    padding-top: 3px;
+  }
+
+  .lib-link:hover { color: var(--accent2); }
+
+  .lib-modelos {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 8px;
+  }
+
+  .lib-modelo {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 2px;
+    background: rgba(200,77,10,.08);
+    color: var(--accent);
+    border: 1px solid rgba(200,77,10,.15);
+  }
+
+  /* ── CONCEITO ── */
+  .conceito {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+  }
+
+  .conceito-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+
+  .conceito-title { font-size: 17px; font-weight: 400; color: var(--text); margin-bottom: 10px; }
+  .conceito p { font-size: 14px; color: var(--muted); margin-bottom: 8px; line-height: 1.65; }
+  .conceito p:last-child { margin-bottom: 0; }
+  .conceito code {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 3px;
+    padding: 1px 6px;
+    color: var(--accent);
+  }
+
+  /* ── DIVIDER + LINKS ── */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 52px 0 36px; }
+  .links-grid { display: flex; flex-direction: column; gap: 6px; }
+
+  .link-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    text-decoration: none;
+    color: var(--text);
+    font-size: 13px;
+    transition: border-color .15s, background .15s;
+  }
+
+  .link-item:hover { border-color: var(--border2); background: var(--surface2); }
+  .link-icon { font-family: var(--font-mono); font-size: 13px; color: var(--accent); flex-shrink: 0; width: 20px; text-align: center; }
+  .link-desc { font-size: 11px; color: var(--muted); margin-top: 2px; font-family: var(--font-mono); }
+  .link-body { flex: 1; }
+  .link-arrow { font-size: 11px; color: var(--dim); margin-left: auto; }
+
+  /* ── FADE IN ── */
+  .fade-in { opacity: 0; transform: translateY(14px); transition: opacity .5s ease, transform .5s ease; }
+  .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 640px) {
+    main { padding: 0 18px 80px; }
+    .bloco { grid-template-columns: 60px 1fr; }
+    .fn-row { grid-template-columns: 1fr; }
+    .fn-name { border-right: none; border-bottom: 1px solid var(--border); }
+    .lib { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<main>
+
+  <div class="hero">
+    <div class="hero-eyebrow">Aula 04 · Semana 2 · 3 horas</div>
+    <h1>Introdução ao <em>p5.js</em></h1>
+    <div class="hero-meta">
+      <span>Formato laboratório</span>
+      <span>Navegador moderno</span>
+      <span>editor.p5js.org ou VS Code</span>
+    </div>
+  </div>
+
+  <div class="timeline">
+
+    <!-- BLOCO 1 -->
+    <div class="bloco fade-in">
+      <div class="bloco-time">
+        <div class="bloco-time-dur">40min</div>
+        <div class="bloco-time-label">Bloco 1</div>
+      </div>
+      <div class="bloco-line"></div>
+      <div class="bloco-dot"></div>
+      <div class="bloco-body">
+        <div class="bloco-header">
+          <div class="bloco-num">Bloco 01</div>
+          <h2>Estrutura básica e documentação</h2>
+        </div>
+
+        <p>p5.js é uma biblioteca JavaScript criada por Lauren McCarthy em 2014 como reinterpretação do Processing para a web. A premissa é a mesma: tornar a programação acessível para artistas, designers e pessoas sem formação técnica, com foco em output visual e interativo direto no navegador.</p>
+
+        <p>Ao contrário do Pure Data, onde o programa é um grafo de objetos conectados, em p5.js o programa é um texto — uma sequência de instruções em JavaScript que o navegador interpreta e executa. Os mesmos conceitos de objeto, método e atributo da aula 1 aparecem aqui de forma explícita no código.</p>
+
+        <div class="conceito">
+          <div class="conceito-label">Estrutura fundamental</div>
+          <div class="conceito-title">setup() e draw()</div>
+          <p>Todo sketch p5.js tem a mesma estrutura obrigatória — idêntica ao Arduino em conceito. <code>setup()</code> roda uma vez ao iniciar: configura o canvas, define tamanho, inicializa variáveis. <code>draw()</code> roda em loop contínuo — por padrão 60 vezes por segundo — redesenhando a cena a cada frame.</p>
+          <p>Esse loop é o equivalente ao <code>loop()</code> do Arduino e ao patch em execução do PD. É onde o sistema lê entradas e atualiza saídas em tempo real.</p>
+        </div>
+
+        <h3>Primeiro sketch</h3>
+        <div class="code-block">
+          <div class="code-label">sketch.js · estrutura básica</div>
+          <span class="c-keyword">function</span> <span class="c-fn">setup</span>() {<br>
+          &nbsp;&nbsp;<span class="c-fn">createCanvas</span>(<span class="c-num">800</span>, <span class="c-num">600</span>); <span class="c-comment">// cria o canvas em pixels</span><br>
+          &nbsp;&nbsp;<span class="c-fn">background</span>(<span class="c-num">240</span>);         <span class="c-comment">// fundo cinza claro (0=preto, 255=branco)</span><br>
+          }<br>
+          <br>
+          <span class="c-keyword">function</span> <span class="c-fn">draw</span>() {<br>
+          &nbsp;&nbsp;<span class="c-fn">background</span>(<span class="c-num">240</span>);           <span class="c-comment">// redesenha fundo a cada frame (apaga rastro)</span><br>
+          &nbsp;&nbsp;<span class="c-fn">fill</span>(<span class="c-num">200</span>, <span class="c-num">77</span>, <span class="c-num">10</span>);     <span class="c-comment">// cor laranja em RGB</span><br>
+          &nbsp;&nbsp;<span class="c-fn">noStroke</span>();              <span class="c-comment">// sem borda</span><br>
+          &nbsp;&nbsp;<span class="c-fn">circle</span>(mouseX, mouseY, <span class="c-num">60</span>); <span class="c-comment">// círculo na posição do mouse</span><br>
+          }
+        </div>
+
+        <h3>Funções e variáveis fundamentais</h3>
+        <div class="fn-grid">
+          <div class="fn-row">
+            <div class="fn-name">createCanvas(w, h)</div>
+            <div class="fn-desc">Cria a área de desenho em pixels. Chamado uma vez no setup().</div>
+          </div>
+          <div class="fn-row">
+            <div class="fn-name">background(r, g, b)</div>
+            <div class="fn-desc">Preenche o fundo com cor. No draw(), apaga o frame anterior.</div>
+          </div>
+          <div class="fn-row">
+            <div class="fn-name">fill(r, g, b)</div>
+            <div class="fn-desc">Define a cor de preenchimento das formas seguintes.</div>
+          </div>
+          <div class="fn-row">
+            <div class="fn-name">stroke(r, g, b)</div>
+            <div class="fn-desc">Define a cor da borda. <code>noStroke()</code> remove a borda.</div>
+          </div>
+          <div class="fn-row">
+            <div class="fn-name">circle(x, y, d)</div>
+            <div class="fn-desc">Desenha um círculo no ponto x,y com diâmetro d.</div>
+          </div>
+          <div class="fn-row">
+            <div class="fn-name">rect(x, y, w, h)</div>
+            <div class="fn-desc">Retângulo com canto superior esquerdo em x,y.</div>
+          </div>
+          <div class="fn-row">
+            <div class="fn-name">line(x1, y1, x2, y2)</div>
+            <div class="fn-desc">Linha entre dois pontos.</div>
+          </div>
+          <div class="fn-row">
+            <div class="fn-name">text(str, x, y)</div>
+            <div class="fn-desc">Renderiza texto no canvas. <code>textSize()</code> define o tamanho.</div>
+          </div>
+          <div class="fn-row">
+            <div class="fn-name">map(val, a1, a2, b1, b2)</div>
+            <div class="fn-desc"><em>Fundamental:</em> remapeia val do intervalo [a1,a2] para [b1,b2]. Equivalente ao mapeamento que fazemos no PD.</div>
+          </div>
+          <div class="fn-row">
+            <div class="fn-name">mouseX / mouseY</div>
+            <div class="fn-desc">Variáveis globais com a posição atual do cursor no canvas.</div>
+          </div>
+          <div class="fn-row">
+            <div class="fn-name">width / height</div>
+            <div class="fn-desc">Dimensões do canvas. Útil para posicionar elementos relativamente.</div>
+          </div>
+          <div class="fn-row">
+            <div class="fn-name">frameCount</div>
+            <div class="fn-desc">Número de frames executados desde o início. Serve como relógio para animações e eventos temporais.</div>
+          </div>
+        </div>
+
+        <h3>Documentação</h3>
+        <p>A referência oficial do p5.js é uma das documentações mais bem estruturadas do ecossistema criativo. Cada função tem descrição, parâmetros, tipo de retorno e exemplos interativos rodando diretamente na página.</p>
+
+        <ul class="items">
+          <li><strong style="color:var(--text)">p5js.org/reference</strong> — referência completa de todas as funções, organizadas por categoria: shape, color, input, transform, math, sound…</li>
+          <li><strong style="color:var(--text)">editor.p5js.org</strong> — editor online com preview em tempo real. Não requer instalação — funciona diretamente no navegador. Ideal para o laboratório.</li>
+          <li><strong style="color:var(--text)">p5js.org/examples</strong> — galeria de exemplos com código aberto. Ponto de partida para qualquer técnica: partículas, noise, geometria, input.</li>
+          <li><strong style="color:var(--text)">openprocessing.org</strong> — comunidade de sketches públicos em p5.js e Processing. Código-fonte aberto para explorar e adaptar.</li>
+        </ul>
+
+        <div class="callout">
+          <strong>Atividade:</strong> abrir o editor online em editor.p5js.org e reproduzir o sketch acima. Alterar os valores de cor, tamanho e posição. Retirar o <code>background()</code> do draw() e observar o rastro que se forma — o fundo não apagado acumula os frames anteriores.
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 2 -->
+    <div class="bloco fade-in">
+      <div class="bloco-time">
+        <div class="bloco-time-dur">35min</div>
+        <div class="bloco-time-label">Bloco 2</div>
+      </div>
+      <div class="bloco-line"></div>
+      <div class="bloco-dot"></div>
+      <div class="bloco-body">
+        <div class="bloco-header">
+          <div class="bloco-num">Bloco 02</div>
+          <h2>Sensores do computador — mouse, teclado e microfone</h2>
+        </div>
+
+        <p>Assim como no Pure Data, o p5.js acessa as entradas nativas do computador antes de qualquer hardware externo. Mouse, teclado e microfone estão disponíveis como variáveis globais e funções de evento — sem bibliotecas adicionais.</p>
+
+        <h3>Mouse</h3>
+        <div class="fn-grid">
+          <div class="fn-row">
+            <div class="fn-name">mouseX / mouseY</div>
+            <div class="fn-desc">Posição atual do cursor dentro do canvas, atualizada a cada frame.</div>
+          </div>
+          <div class="fn-row">
+            <div class="fn-name">pmouseX / pmouseY</div>
+            <div class="fn-desc">Posição do cursor no frame anterior. A diferença com mouseX/Y indica velocidade e direção do movimento.</div>
+          </div>
+          <div class="fn-row">
+            <div class="fn-name">mouseIsPressed</div>
+            <div class="fn-desc">Booleano: <em>true</em> enquanto qualquer botão do mouse estiver pressionado.</div>
+          </div>
+          <div class="fn-row">
+            <div class="fn-name">mousePressed()</div>
+            <div class="fn-desc">Função de evento — chamada automaticamente no clique. Definir fora de draw() para tratar eventos discretos.</div>
+          </div>
+        </div>
+
+        <h3>Teclado</h3>
+        <div class="fn-grid">
+          <div class="fn-row">
+            <div class="fn-name">keyIsPressed</div>
+            <div class="fn-desc">Booleano: <em>true</em> enquanto qualquer tecla estiver pressionada.</div>
+          </div>
+          <div class="fn-row">
+            <div class="fn-name">key</div>
+            <div class="fn-desc">Caractere da última tecla pressionada. Ex: <em>'a'</em>, <em>' '</em>, <em>'Enter'</em>.</div>
+          </div>
+          <div class="fn-row">
+            <div class="fn-name">keyCode</div>
+            <div class="fn-desc">Código numérico. Constantes disponíveis: <code>UP_ARROW</code>, <code>DOWN_ARROW</code>, <code>SPACE</code>, <code>ENTER</code>…</div>
+          </div>
+          <div class="fn-row">
+            <div class="fn-name">keyPressed()</div>
+            <div class="fn-desc">Evento disparado ao pressionar uma tecla. Usar para lógica discreta em vez de polling no draw().</div>
+          </div>
+        </div>
+
+        <h3>Microfone — p5.sound</h3>
+        <p>A biblioteca p5.sound (incluída por padrão no editor online) oferece acesso ao microfone e análise de áudio em tempo real.</p>
+
+        <div class="fn-grid">
+          <div class="fn-row">
+            <div class="fn-name">p5.AudioIn</div>
+            <div class="fn-desc">Objeto que representa a entrada de áudio do sistema — microfone ou linha. Requer permissão do usuário no navegador.</div>
+          </div>
+          <div class="fn-row">
+            <div class="fn-name">.getLevel()</div>
+            <div class="fn-desc">Retorna a amplitude atual do sinal de 0 a 1. Equivalente ao <code>[env~]</code> do PD.</div>
+          </div>
+          <div class="fn-row">
+            <div class="fn-name">p5.FFT</div>
+            <div class="fn-desc">Análise espectral em tempo real. <code>.analyze()</code> retorna array de 1024 valores de amplitude por frequência.</div>
+          </div>
+        </div>
+
+        <div class="code-block">
+          <div class="code-label">sketch.js · amplitude do microfone controlando o tamanho de um círculo</div>
+          <span class="c-keyword">let</span> mic;<br>
+          <br>
+          <span class="c-keyword">function</span> <span class="c-fn">setup</span>() {<br>
+          &nbsp;&nbsp;<span class="c-fn">createCanvas</span>(<span class="c-num">800</span>, <span class="c-num">600</span>);<br>
+          &nbsp;&nbsp;mic = <span class="c-keyword">new</span> p5.<span class="c-fn">AudioIn</span>();<br>
+          &nbsp;&nbsp;mic.<span class="c-fn">start</span>(); <span class="c-comment">// solicita permissão ao navegador</span><br>
+          }<br>
+          <br>
+          <span class="c-keyword">function</span> <span class="c-fn">draw</span>() {<br>
+          &nbsp;&nbsp;<span class="c-fn">background</span>(<span class="c-num">248</span>, <span class="c-num">247</span>, <span class="c-num">244</span>);<br>
+          &nbsp;&nbsp;<span class="c-keyword">let</span> vol = mic.<span class="c-fn">getLevel</span>(); <span class="c-comment">// 0 a 1</span><br>
+          &nbsp;&nbsp;<span class="c-keyword">let</span> diam = <span class="c-fn">map</span>(vol, <span class="c-num">0</span>, <span class="c-num">1</span>, <span class="c-num">20</span>, <span class="c-num">400</span>);<br>
+          &nbsp;&nbsp;<span class="c-fn">fill</span>(<span class="c-num">200</span>, <span class="c-num">77</span>, <span class="c-num">10</span>);<br>
+          &nbsp;&nbsp;<span class="c-fn">noStroke</span>();<br>
+          &nbsp;&nbsp;<span class="c-fn">circle</span>(width / <span class="c-num">2</span>, height / <span class="c-num">2</span>, diam);<br>
+          }
+        </div>
+
+        <div class="callout">
+          <strong>Atividade:</strong> combinar os três sensores em um único sketch — mouse controla posição, teclado muda a cor, microfone controla o tamanho. Usar <code>map()</code> para normalizar todos os valores para a faixa de cada parâmetro visual.
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 3 -->
+    <div class="bloco fade-in">
+      <div class="bloco-time">
+        <div class="bloco-time-dur">30min</div>
+        <div class="bloco-time-label">Bloco 3</div>
+      </div>
+      <div class="bloco-line"></div>
+      <div class="bloco-dot"></div>
+      <div class="bloco-body">
+        <div class="bloco-header">
+          <div class="bloco-num">Bloco 03</div>
+          <h2>Câmera como sensor</h2>
+        </div>
+
+        <p>A câmera transforma o p5.js em um sistema de visão — em vez de posição do mouse, o input é luz, movimento e forma capturados em tempo real. O objeto <code>p5.Element</code> criado por <code>createCapture()</code> devolve o feed de vídeo como dado manipulável.</p>
+
+        <div class="fn-grid">
+          <div class="fn-row">
+            <div class="fn-name">createCapture(VIDEO)</div>
+            <div class="fn-desc">Acessa a câmera do dispositivo. Retorna um elemento de vídeo que pode ser desenhado no canvas ou passado para análise.</div>
+          </div>
+          <div class="fn-row">
+            <div class="fn-name">image(vid, x, y, w, h)</div>
+            <div class="fn-desc">Desenha o frame atual do vídeo no canvas. Atualiza automaticamente a cada draw().</div>
+          </div>
+          <div class="fn-row">
+            <div class="fn-name">vid.loadPixels()</div>
+            <div class="fn-desc">Carrega os pixels do frame atual em um array RGBA acessível via <code>vid.pixels[]</code>.</div>
+          </div>
+          <div class="fn-row">
+            <div class="fn-name">vid.pixels[]</div>
+            <div class="fn-desc">Array com os valores R, G, B, A de cada pixel — 4 valores por pixel, em sequência linear.</div>
+          </div>
+        </div>
+
+        <div class="code-block">
+          <div class="code-label">sketch.js · câmera espelhada no canvas</div>
+          <span class="c-keyword">let</span> cam;<br>
+          <br>
+          <span class="c-keyword">function</span> <span class="c-fn">setup</span>() {<br>
+          &nbsp;&nbsp;<span class="c-fn">createCanvas</span>(<span class="c-num">640</span>, <span class="c-num">480</span>);<br>
+          &nbsp;&nbsp;cam = <span class="c-fn">createCapture</span>(VIDEO);<br>
+          &nbsp;&nbsp;cam.<span class="c-fn">size</span>(<span class="c-num">640</span>, <span class="c-num">480</span>);<br>
+          &nbsp;&nbsp;cam.<span class="c-fn">hide</span>(); <span class="c-comment">// esconde o elemento HTML nativo</span><br>
+          }<br>
+          <br>
+          <span class="c-keyword">function</span> <span class="c-fn">draw</span>() {<br>
+          &nbsp;&nbsp;<span class="c-fn">translate</span>(width, <span class="c-num">0</span>);<br>
+          &nbsp;&nbsp;<span class="c-fn">scale</span>(-<span class="c-num">1</span>, <span class="c-num">1</span>); <span class="c-comment">// espelha horizontalmente</span><br>
+          &nbsp;&nbsp;<span class="c-fn">image</span>(cam, <span class="c-num">0</span>, <span class="c-num">0</span>);<br>
+          }
+        </div>
+
+        <h3>Detecção de movimento por diferença de pixels</h3>
+        <p>A técnica mais simples de visão computacional sem biblioteca: comparar o frame atual com o anterior pixel a pixel. Onde a diferença for grande, há movimento.</p>
+
+        <div class="code-block">
+          <div class="code-label">sketch.js · detecção de movimento por diff de pixels</div>
+          <span class="c-keyword">let</span> cam, prevPixels;<br>
+          <br>
+          <span class="c-keyword">function</span> <span class="c-fn">setup</span>() {<br>
+          &nbsp;&nbsp;<span class="c-fn">createCanvas</span>(<span class="c-num">640</span>, <span class="c-num">480</span>);<br>
+          &nbsp;&nbsp;cam = <span class="c-fn">createCapture</span>(VIDEO);<br>
+          &nbsp;&nbsp;cam.<span class="c-fn">size</span>(<span class="c-num">640</span>, <span class="c-num">480</span>);<br>
+          &nbsp;&nbsp;cam.<span class="c-fn">hide</span>();<br>
+          }<br>
+          <br>
+          <span class="c-keyword">function</span> <span class="c-fn">draw</span>() {<br>
+          &nbsp;&nbsp;cam.<span class="c-fn">loadPixels</span>();<br>
+          &nbsp;&nbsp;<span class="c-keyword">let</span> movimento = <span class="c-num">0</span>;<br>
+          &nbsp;&nbsp;<span class="c-keyword">if</span> (prevPixels) {<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="c-keyword">for</span> (<span class="c-keyword">let</span> i = <span class="c-num">0</span>; i &lt; cam.pixels.length; i += <span class="c-num">4</span>) {<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="c-keyword">let</span> diff = <span class="c-fn">abs</span>(cam.pixels[i] - prevPixels[i]);<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;movimento += diff;<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+          &nbsp;&nbsp;}<br>
+          &nbsp;&nbsp;prevPixels = cam.pixels.slice();<br>
+          &nbsp;&nbsp;<span class="c-keyword">let</span> nivel = <span class="c-fn">map</span>(movimento, <span class="c-num">0</span>, <span class="c-num">5000000</span>, <span class="c-num">0</span>, <span class="c-num">255</span>);<br>
+          &nbsp;&nbsp;<span class="c-fn">background</span>(nivel, <span class="c-num">77</span>, <span class="c-num">10</span>); <span class="c-comment">// mais laranja = mais movimento</span><br>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 4 -->
+    <div class="bloco fade-in">
+      <div class="bloco-time">
+        <div class="bloco-time-dur">40min</div>
+        <div class="bloco-time-label">Bloco 4</div>
+      </div>
+      <div class="bloco-line"></div>
+      <div class="bloco-dot"></div>
+      <div class="bloco-body">
+        <div class="bloco-header">
+          <div class="bloco-num">Bloco 04</div>
+          <h2>Bibliotecas de reconhecimento — face, mãos e esqueleto</h2>
+        </div>
+
+        <p>Modelos de visão computacional treinados em milhões de imagens rodam hoje diretamente no navegador via TensorFlow.js. As bibliotecas abaixo encapsulam esses modelos em APIs simples — em poucas linhas é possível obter as coordenadas de 468 pontos do rosto, 21 pontos de cada mão ou 33 pontos do corpo.</p>
+
+        <div class="libs">
+          <div class="lib">
+            <div>
+              <div class="lib-name">MediaPipe</div>
+              <div class="lib-sub">google.github.io/mediapipe</div>
+            </div>
+            <a class="lib-link" href="https://google.github.io/mediapipe/" target="_blank">docs ↗</a>
+            <div class="lib-desc">Framework do Google para pipelines de percepção em tempo real. Roda no navegador via WASM ou WebGL. Modelos de alta precisão com latência baixa. Base para as soluções de face, mão e pose descritas abaixo.</div>
+            <div class="lib-modelos">
+              <span class="lib-modelo">Face Landmarker — 478 pontos</span>
+              <span class="lib-modelo">Hand Landmarker — 21 pontos / mão</span>
+              <span class="lib-modelo">Pose Landmarker — 33 pontos do corpo</span>
+              <span class="lib-modelo">Object Detection</span>
+            </div>
+          </div>
+
+          <div class="lib">
+            <div>
+              <div class="lib-name">ml5.js</div>
+              <div class="lib-sub">ml5js.org</div>
+            </div>
+            <a class="lib-link" href="https://ml5js.org" target="_blank">docs ↗</a>
+            <div class="lib-desc">Biblioteca de machine learning amigável, construída sobre TensorFlow.js e projetada para uso com p5.js. Encapsula os modelos do MediaPipe e outros em uma API consistente — <code>ml5.faceMesh()</code>, <code>ml5.handPose()</code>, <code>ml5.bodyPose()</code> — com callbacks simples e integração direta ao canvas p5.</div>
+            <div class="lib-modelos">
+              <span class="lib-modelo">faceMesh</span>
+              <span class="lib-modelo">handPose</span>
+              <span class="lib-modelo">bodyPose</span>
+              <span class="lib-modelo">imageClassifier</span>
+              <span class="lib-modelo">soundClassifier</span>
+              <span class="lib-modelo">neuralNetwork</span>
+            </div>
+          </div>
+
+          <div class="lib">
+            <div>
+              <div class="lib-name">face-api.js</div>
+              <div class="lib-sub">justadudewhohacks.github.io/face-api.js</div>
+            </div>
+            <a class="lib-link" href="https://github.com/justadudewhohacks/face-api.js" target="_blank">GitHub ↗</a>
+            <div class="lib-desc">Biblioteca especializada em detecção e reconhecimento facial. Além dos landmarks, oferece detecção de expressão facial (feliz, triste, surpreso…) e reconhecimento de identidade por embedding. Útil para instalações que reagem a emoções.</div>
+            <div class="lib-modelos">
+              <span class="lib-modelo">68 pontos faciais</span>
+              <span class="lib-modelo">detecção de expressão</span>
+              <span class="lib-modelo">reconhecimento de identidade</span>
+            </div>
+          </div>
+        </div>
+
+        <h3>Como integrar ao p5.js</h3>
+        <p>A forma mais direta é via CDN — incluindo o script no <code>index.html</code> antes do sketch. No editor online do p5.js, as bibliotecas são adicionadas em <em>Sketch → Add Library</em> ou via tag script no index.html da aba de arquivos.</p>
+
+        <div class="code-block">
+          <div class="code-label">index.html · carregando ml5.js via CDN</div>
+          &lt;<span class="c-keyword">script</span> src=<span class="c-string">"https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"</span>&gt;&lt;/<span class="c-keyword">script</span>&gt;<br>
+          &lt;<span class="c-keyword">script</span> src=<span class="c-string">"https://unpkg.com/ml5@1/dist/ml5.min.js"</span>&gt;&lt;/<span class="c-keyword">script</span>&gt;<br>
+          &lt;<span class="c-keyword">script</span> src=<span class="c-string">"sketch.js"</span>&gt;&lt;/<span class="c-keyword">script</span>&gt;
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 5 -->
+    <div class="bloco fade-in">
+      <div class="bloco-time">
+        <div class="bloco-time-dur">35min</div>
+        <div class="bloco-time-label">Bloco 5</div>
+      </div>
+      <div class="bloco-dot" style="background:var(--accent2)"></div>
+      <div class="bloco-body">
+        <div class="bloco-header">
+          <div class="bloco-num">Bloco 05</div>
+          <h2>Integração em sketch — ml5.js handPose</h2>
+        </div>
+
+        <p>Um sketch completo que usa a câmera como sensor de gestos: ml5.js detecta a posição das mãos em tempo real e os dados dos 21 pontos de cada mão controlam elementos visuais no canvas.</p>
+
+        <div class="code-block">
+          <div class="code-label">sketch.js · handPose — posição dos dedos controlando círculos</div>
+          <span class="c-keyword">let</span> cam, handPose, maos = [];<br>
+          <br>
+          <span class="c-keyword">function</span> <span class="c-fn">preload</span>() {<br>
+          &nbsp;&nbsp;<span class="c-comment">// carrega o modelo antes do setup()</span><br>
+          &nbsp;&nbsp;handPose = ml5.<span class="c-fn">handPose</span>({ flipped: <span class="c-keyword">true</span> });<br>
+          }<br>
+          <br>
+          <span class="c-keyword">function</span> <span class="c-fn">setup</span>() {<br>
+          &nbsp;&nbsp;<span class="c-fn">createCanvas</span>(<span class="c-num">640</span>, <span class="c-num">480</span>);<br>
+          &nbsp;&nbsp;cam = <span class="c-fn">createCapture</span>(VIDEO);<br>
+          &nbsp;&nbsp;cam.<span class="c-fn">size</span>(<span class="c-num">640</span>, <span class="c-num">480</span>);<br>
+          &nbsp;&nbsp;cam.<span class="c-fn">hide</span>();<br>
+          &nbsp;&nbsp;<span class="c-comment">// inicia a detecção e guarda resultados em maos[]</span><br>
+          &nbsp;&nbsp;handPose.<span class="c-fn">detectStart</span>(cam, (resultado) =&gt; { maos = resultado; });<br>
+          }<br>
+          <br>
+          <span class="c-keyword">function</span> <span class="c-fn">draw</span>() {<br>
+          &nbsp;&nbsp;<span class="c-fn">image</span>(cam, <span class="c-num">0</span>, <span class="c-num">0</span>);<br>
+          &nbsp;&nbsp;<br>
+          &nbsp;&nbsp;<span class="c-keyword">for</span> (<span class="c-keyword">let</span> mao <span class="c-keyword">of</span> maos) {<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="c-keyword">for</span> (<span class="c-keyword">let</span> ponto <span class="c-keyword">of</span> mao.keypoints) {<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="c-fn">fill</span>(<span class="c-num">200</span>, <span class="c-num">77</span>, <span class="c-num">10</span>);<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="c-fn">noStroke</span>();<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="c-fn">circle</span>(ponto.x, ponto.y, <span class="c-num">10</span>);<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+          &nbsp;&nbsp;}<br>
+          }
+        </div>
+
+        <h3>Estrutura dos dados retornados</h3>
+        <ul class="items">
+          <li>O array <code>maos[]</code> contém um objeto por mão detectada — normalmente até 2.</li>
+          <li>Cada objeto tem <code>keypoints[]</code> — array de 21 objetos com propriedades <code>x</code>, <code>y</code>, <code>z</code> e <code>name</code> (ex: <em>index_finger_tip</em>, <em>thumb_tip</em>…).</li>
+          <li>As coordenadas <code>x</code> e <code>y</code> já estão no espaço do canvas — prontas para usar em <code>circle()</code>, <code>line()</code> ou qualquer função de desenho.</li>
+          <li>O parâmetro <code>flipped: true</code> espelha horizontalmente — essencial para que o movimento da mão corresponda ao que o usuário vê.</li>
+        </ul>
+
+        <div class="callout">
+          <strong>Atividade:</strong> usar as coordenadas da ponta do dedo indicador (<code>name === 'index_finger_tip'</code>) para controlar a frequência de um oscilador via Web Audio API — ou exportar os dados via OSC para um patch Pure Data usando a biblioteca p5.serialport. O gesto vira interface audiovisual.
+        </div>
+
+        <h3>Variação — bodyPose</h3>
+        <div class="code-block">
+          <div class="code-label">sketch.js · bodyPose — esqueleto completo</div>
+          <span class="c-keyword">let</span> cam, bodyPose, corpos = [], conexoes;<br>
+          <br>
+          <span class="c-keyword">function</span> <span class="c-fn">preload</span>() {<br>
+          &nbsp;&nbsp;bodyPose = ml5.<span class="c-fn">bodyPose</span>(<span class="c-string">"BlazePose"</span>);<br>
+          }<br>
+          <br>
+          <span class="c-keyword">function</span> <span class="c-fn">setup</span>() {<br>
+          &nbsp;&nbsp;<span class="c-fn">createCanvas</span>(<span class="c-num">640</span>, <span class="c-num">480</span>);<br>
+          &nbsp;&nbsp;cam = <span class="c-fn">createCapture</span>(VIDEO);<br>
+          &nbsp;&nbsp;cam.<span class="c-fn">size</span>(<span class="c-num">640</span>, <span class="c-num">480</span>); cam.<span class="c-fn">hide</span>();<br>
+          &nbsp;&nbsp;bodyPose.<span class="c-fn">detectStart</span>(cam, (r) =&gt; { corpos = r; });<br>
+          &nbsp;&nbsp;conexoes = bodyPose.<span class="c-fn">getSkeleton</span>(); <span class="c-comment">// pares de pontos conectados</span><br>
+          }<br>
+          <br>
+          <span class="c-keyword">function</span> <span class="c-fn">draw</span>() {<br>
+          &nbsp;&nbsp;<span class="c-fn">image</span>(cam, <span class="c-num">0</span>, <span class="c-num">0</span>);<br>
+          &nbsp;&nbsp;<span class="c-keyword">for</span> (<span class="c-keyword">let</span> corpo <span class="c-keyword">of</span> corpos) {<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="c-comment">// desenha as conexões do esqueleto</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="c-keyword">for</span> (<span class="c-keyword">let</span> [a, b] <span class="c-keyword">of</span> conexoes) {<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="c-fn">stroke</span>(<span class="c-num">200</span>, <span class="c-num">77</span>, <span class="c-num">10</span>); <span class="c-fn">strokeWeight</span>(<span class="c-num">2</span>);<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="c-fn">line</span>(a.x, a.y, b.x, b.y);<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="c-comment">// desenha os pontos</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="c-keyword">for</span> (<span class="c-keyword">let</span> p <span class="c-keyword">of</span> corpo.keypoints) {<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="c-fn">fill</span>(<span class="c-num">255</span>); <span class="c-fn">noStroke</span>();<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="c-fn">circle</span>(p.x, p.y, <span class="c-num">8</span>);<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+          &nbsp;&nbsp;}<br>
+          }
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <hr class="divider">
+
+  <h3 style="margin-top:0;margin-bottom:16px">Materiais de apoio</h3>
+  <div class="links-grid">
+    <a class="link-item" href="https://editor.p5js.org" target="_blank">
+      <span class="link-icon">✏</span>
+      <div class="link-body">
+        <div>Editor online — p5.js</div>
+        <div class="link-desc">editor.p5js.org · ambiente completo no navegador, sem instalação</div>
+      </div>
+      <span class="link-arrow">↗</span>
+    </a>
+    <a class="link-item" href="https://p5js.org/reference/" target="_blank">
+      <span class="link-icon">📄</span>
+      <div class="link-body">
+        <div>Referência oficial — p5.js</div>
+        <div class="link-desc">Todas as funções com exemplos interativos</div>
+      </div>
+      <span class="link-arrow">↗</span>
+    </a>
+    <a class="link-item" href="https://p5js.org/examples/" target="_blank">
+      <span class="link-icon">📁</span>
+      <div class="link-body">
+        <div>Galeria de exemplos — p5.js</div>
+        <div class="link-desc">Código aberto para explorar: partículas, noise, geometria, input</div>
+      </div>
+      <span class="link-arrow">↗</span>
+    </a>
+    <a class="link-item" href="https://ml5js.org" target="_blank">
+      <span class="link-icon">🤖</span>
+      <div class="link-body">
+        <div>ml5.js</div>
+        <div class="link-desc">Machine learning amigável para p5.js — faceMesh, handPose, bodyPose</div>
+      </div>
+      <span class="link-arrow">↗</span>
+    </a>
+    <a class="link-item" href="https://google.github.io/mediapipe/" target="_blank">
+      <span class="link-icon">📄</span>
+      <div class="link-body">
+        <div>MediaPipe — Google</div>
+        <div class="link-desc">Documentação dos modelos de percepção usados pelo ml5.js</div>
+      </div>
+      <span class="link-arrow">↗</span>
+    </a>
+    <a class="link-item" href="https://github.com/justadudewhohacks/face-api.js" target="_blank">
+      <span class="link-icon">📁</span>
+      <div class="link-body">
+        <div>face-api.js — GitHub</div>
+        <div class="link-desc">Reconhecimento facial, expressão e identidade no navegador</div>
+      </div>
+      <span class="link-arrow">↗</span>
+    </a>
+    <a class="link-item" href="https://openprocessing.org" target="_blank">
+      <span class="link-icon">🔗</span>
+      <div class="link-body">
+        <div>OpenProcessing</div>
+        <div class="link-desc">Comunidade de sketches p5.js e Processing com código aberto</div>
+      </div>
+      <span class="link-arrow">↗</span>
+    </a>
+  </div>
+
+</main>
+
+<script>
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.06 });
+document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+</script>
+<script src="nav.js"></script>
+</body>
+</html>
