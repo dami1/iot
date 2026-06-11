@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aula 5 — Protocolos: MIDI, Serial e OSC · Arduino + p5.js</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f8f7f4;
+    --surface: #ffffff;
+    --surface2: #f0ede8;
+    --border: #d8d4cc;
+    --border2: #b8b4ac;
+    --text: #18180f;
+    --muted: #666660;
+    --dim: #999990;
+    --accent: #c84d0a;
+    --accent2: #a03a06;
+    --font-mono: 'DM Mono', monospace;
+    --font-sans: 'DM Sans', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  main { max-width: 780px; margin: 0 auto; padding: 0 32px 100px; }
+
+  .hero {
+    padding: 56px 0 40px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 56px;
+  }
+
+  .hero-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .hero-eyebrow::after {
+    content: '';
+    height: 1px;
+    width: 40px;
+    background: var(--accent);
+    opacity: .4;
+    display: block;
+  }
+
+  h1 {
+    font-size: clamp(24px, 4vw, 36px);
+    font-weight: 300;
+    line-height: 1.2;
+    letter-spacing: -.02em;
+    color: var(--text);
+    margin-bottom: 20px;
+  }
+
+  h1 em { font-style: normal; color: var(--accent); }
+
+  .hero-meta { display: flex; gap: 20px; flex-wrap: wrap; }
+  .hero-meta span {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .hero-meta span::before { content: '·'; color: var(--accent); }
+
+  .timeline { display: flex; flex-direction: column; }
+
+  .bloco {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 0 28px;
+    position: relative;
+    padding-bottom: 60px;
+  }
+
+  .bloco:last-child { padding-bottom: 0; }
+  .bloco-time { padding-top: 4px; text-align: right; }
+  .bloco-time-label { font-family: var(--font-mono); font-size: 10px; color: var(--dim); }
+  .bloco-time-dur { font-family: var(--font-mono); font-size: 12px; color: var(--muted); font-weight: 500; }
+
+  .bloco-line {
+    position: absolute;
+    left: 80px;
+    top: 8px;
+    bottom: 0;
+    width: 1px;
+    background: var(--border);
+  }
+
+  .bloco:last-child .bloco-line { display: none; }
+
+  .bloco-dot {
+    position: absolute;
+    left: 76px;
+    top: 6px;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--bg);
+  }
+
+  .bloco-body { padding-left: 28px; }
+  .bloco-header { margin-bottom: 24px; }
+
+  .bloco-num {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  h2 { font-size: 20px; font-weight: 400; color: var(--text); letter-spacing: -.01em; line-height: 1.3; }
+
+  h3 {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    margin: 32px 0 14px;
+    font-family: var(--font-mono);
+  }
+
+  p { color: var(--text); margin-bottom: 14px; font-size: 15px; }
+
+  ul.items {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+
+  ul.items li {
+    display: flex;
+    gap: 12px;
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  ul.items li::before {
+    content: '→';
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    flex-shrink: 0;
+    margin-top: 3px;
+  }
+
+  .callout {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.65;
+  }
+
+  .callout strong { color: var(--accent); font-weight: 500; }
+  .callout code {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 1px 6px;
+    color: var(--accent);
+  }
+
+  .code-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.9;
+    overflow-x: auto;
+  }
+
+  .code-block .c-comment { color: var(--dim); font-style: italic; }
+  .code-block .c-keyword { color: var(--accent); font-weight: 500; }
+  .code-block .c-fn      { color: #5a7a3a; }
+  .code-block .c-num     { color: #a05020; }
+  .code-block .c-string  { color: #507a50; }
+  .code-block .c-text    { color: var(--muted); }
+
+  .code-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--dim);
+    margin-bottom: 14px;
+  }
+
+  .steps { display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
+  .step { display: grid; grid-template-columns: 28px 1fr; gap: 14px; align-items: start; }
+
+  .step-n {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+
+  .step-text { font-size: 14px; color: var(--text); padding-top: 4px; line-height: 1.6; }
+
+  .step-text code {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 1px 6px;
+    color: var(--accent);
+  }
+
+  .step-text em { color: var(--muted); font-style: normal; }
+
+  /* ── PROTOCOLOS GRID ── */
+  .protocolos {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+
+  .protocolo {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .protocolo-nome {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--accent);
+  }
+
+  .protocolo-ano {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--dim);
+  }
+
+  .protocolo-specs {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 4px;
+  }
+
+  .protocolo-specs li {
+    font-size: 12px;
+    color: var(--muted);
+    display: flex;
+    gap: 8px;
+    line-height: 1.5;
+  }
+
+  .protocolo-specs li::before { content: '·'; color: var(--border2); flex-shrink: 0; }
+
+  /* ── PD OBJETOS ── */
+  .pd-objetos { display: flex; flex-direction: column; gap: 2px; margin-bottom: 24px; }
+
+  .pd-objeto {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .pd-objeto-nome {
+    padding: 10px 14px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--accent);
+    border-right: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    background: rgba(200,77,10,.04);
+  }
+
+  .pd-objeto-desc {
+    padding: 10px 16px;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+    display: flex;
+    align-items: center;
+  }
+
+  .pd-objeto-desc em { color: var(--text); font-style: normal; }
+  .pd-objeto-desc code {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 0 5px;
+    color: var(--accent);
+    margin: 0 2px;
+  }
+
+  /* ── CONCEITO ── */
+  .conceito {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+  }
+
+  .conceito-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+
+  .conceito-title { font-size: 17px; font-weight: 400; color: var(--text); margin-bottom: 10px; }
+  .conceito p { font-size: 14px; color: var(--muted); margin-bottom: 8px; line-height: 1.65; }
+  .conceito p:last-child { margin-bottom: 0; }
+  .conceito code {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 3px;
+    padding: 1px 6px;
+    color: var(--accent);
+  }
+
+  /* ── OSC ADDRESS ── */
+  .osc-exemplo {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 2;
+  }
+
+  .osc-exemplo .osc-addr { color: var(--accent); }
+  .osc-exemplo .osc-val { color: #5a7a3a; }
+  .osc-exemplo .osc-com { color: var(--dim); font-style: italic; font-size: 11px; }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 52px 0 36px; }
+  .links-grid { display: flex; flex-direction: column; gap: 6px; }
+
+  .link-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    text-decoration: none;
+    color: var(--text);
+    font-size: 13px;
+    transition: border-color .15s, background .15s;
+  }
+
+  .link-item:hover { border-color: var(--border2); background: var(--surface2); }
+  .link-icon { font-family: var(--font-mono); font-size: 13px; color: var(--accent); flex-shrink: 0; width: 20px; text-align: center; }
+  .link-desc { font-size: 11px; color: var(--muted); margin-top: 2px; font-family: var(--font-mono); }
+  .link-body { flex: 1; }
+  .link-arrow { font-size: 11px; color: var(--dim); margin-left: auto; }
+
+  .fade-in { opacity: 0; transform: translateY(14px); transition: opacity .5s ease, transform .5s ease; }
+  .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 640px) {
+    main { padding: 0 18px 80px; }
+    .bloco { grid-template-columns: 60px 1fr; }
+    .protocolos { grid-template-columns: 1fr; }
+    .pd-objeto { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<main>
+
+  <div class="hero">
+    <div class="hero-eyebrow">Aula 05 · Semana 3 · 3 horas</div>
+    <h1>Protocolos de comunicação<br>e integração <em>Arduino + p5.js</em></h1>
+    <div class="hero-meta">
+      <span>Formato laboratório</span>
+      <span>Arduino + sensores</span>
+      <span>Chrome ou Edge (Web Serial)</span>
+      <span>Pd Vanilla</span>
+    </div>
+  </div>
+
+  <div class="timeline">
+
+    <!-- BLOCO 1 -->
+    <div class="bloco fade-in">
+      <div class="bloco-time">
+        <div class="bloco-time-dur">35min</div>
+        <div class="bloco-time-label">Bloco 1</div>
+      </div>
+      <div class="bloco-line"></div>
+      <div class="bloco-dot"></div>
+      <div class="bloco-body">
+        <div class="bloco-header">
+          <div class="bloco-num">Bloco 01</div>
+          <h2>Protocolos de comunicação — MIDI, Serial e OSC</h2>
+        </div>
+
+        <p>Um protocolo de comunicação é um acordo sobre como dois sistemas trocam dados: o formato das mensagens, a velocidade, a ordem dos bytes. Em sistemas interativos, três protocolos cobrem praticamente todos os cenários de conexão entre hardware, software e rede.</p>
+
+        <div class="protocolos">
+          <div class="protocolo">
+            <div class="protocolo-nome">Serial</div>
+            <div class="protocolo-ano">RS-232, anos 1960</div>
+            <ul class="protocolo-specs">
+              <li>Comunicação ponto a ponto via cabo (USB)</li>
+              <li>Bytes em sequência, um a um</li>
+              <li>Velocidade em baud: 9600, 115200…</li>
+              <li>Sem endereçamento — um emissor, um receptor</li>
+              <li>É como o Arduino fala com o computador</li>
+            </ul>
+          </div>
+          <div class="protocolo">
+            <div class="protocolo-nome">MIDI</div>
+            <div class="protocolo-ano">1983</div>
+            <ul class="protocolo-specs">
+              <li>Padrão da indústria musical</li>
+              <li>Mensagens: note on/off, control change, pitch bend</li>
+              <li>Valores de 0 a 127 (7 bits)</li>
+              <li>16 canais por porta</li>
+              <li>Universal: qualquer DAW, sintetizador ou controlador entende</li>
+            </ul>
+          </div>
+          <div class="protocolo">
+            <div class="protocolo-nome">OSC</div>
+            <div class="protocolo-ano">Open Sound Control, 1997</div>
+            <ul class="protocolo-specs">
+              <li>Sucessor moderno do MIDI, via rede (UDP/IP)</li>
+              <li>Endereços legíveis: /sensor/luz</li>
+              <li>Valores de alta resolução: float, int, string</li>
+              <li>Funciona por WiFi, Ethernet, localhost</li>
+              <li>Padrão em PD, Max, TouchDesigner, Resolume</li>
+            </ul>
+          </div>
+        </div>
+
+        <h3>Quando usar cada um</h3>
+        <ul class="items">
+          <li><strong style="color:var(--text)">Serial</strong> — quando há um cabo USB entre o microcontrolador e o computador. Simples, confiável, baixa latência. Limitação: distância do cabo e um dispositivo por porta.</li>
+          <li><strong style="color:var(--text)">MIDI</strong> — quando o destino é musical: controlar um sintetizador, uma DAW, um plugin. A resolução de 7 bits (0–127) é limitada, mas a compatibilidade é universal.</li>
+          <li><strong style="color:var(--text)">OSC</strong> — quando os dispositivos estão em rede: múltiplos computadores, smartphones, ESP32 via WiFi. Resolução ilimitada, endereçamento legível, múltiplos destinos. É o protocolo central das próximas aulas.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- BLOCO 2 -->
+    <div class="bloco fade-in">
+      <div class="bloco-time">
+        <div class="bloco-time-dur">40min</div>
+        <div class="bloco-time-label">Bloco 2</div>
+      </div>
+      <div class="bloco-line"></div>
+      <div class="bloco-dot"></div>
+      <div class="bloco-body">
+        <div class="bloco-header">
+          <div class="bloco-num">Bloco 02</div>
+          <h2>OSC a fundo — e implementação no Pure Data</h2>
+        </div>
+
+        <p>OSC (Open Sound Control) foi criado no CNMAT da UC Berkeley como resposta às limitações do MIDI: resolução baixa, endereçamento rígido e dependência de cabo dedicado. O OSC trafega por redes comuns — a mesma infraestrutura de internet — usando geralmente o protocolo UDP.</p>
+
+        <div class="conceito">
+          <div class="conceito-label">Anatomia</div>
+          <div class="conceito-title">A mensagem OSC</div>
+          <p>Toda mensagem OSC tem duas partes: um <strong style="color:var(--text)">endereço</strong> — um caminho hierárquico legível, como uma URL — e um ou mais <strong style="color:var(--text)">argumentos</strong> — os valores transmitidos, que podem ser float, int, string ou blob.</p>
+          <p>O endereçamento hierárquico é a grande elegância do protocolo: a estrutura do endereço documenta o próprio sistema.</p>
+        </div>
+
+        <div class="osc-exemplo">
+          <span class="osc-addr">/sensor/luz</span> <span class="osc-val">0.73</span> <span class="osc-com">← um float de alta resolução</span><br>
+          <span class="osc-addr">/sensor/distancia</span> <span class="osc-val">142.5</span> <span class="osc-com">← centímetros, sem perda de precisão</span><br>
+          <span class="osc-addr">/corpo/mao/direita/x</span> <span class="osc-val">0.41</span> <span class="osc-com">← hierarquia descreve o sistema</span><br>
+          <span class="osc-addr">/synth/osc1/freq</span> <span class="osc-val">440.0</span> <span class="osc-com">← controle de parâmetro remoto</span><br>
+          <span class="osc-addr">/cena/trocar</span> <span class="osc-val">"abertura"</span> <span class="osc-com">← strings também trafegam</span>
+        </div>
+
+        <div class="conceito">
+          <div class="conceito-label">Rede</div>
+          <div class="conceito-title">IP e porta — o endereço da máquina</div>
+          <p>OSC viaja por UDP, o protocolo de datagramas da internet. Para enviar uma mensagem é preciso saber dois números: o <strong style="color:var(--text)">IP</strong> da máquina de destino (ex: <code>192.168.0.15</code>, ou <code>127.0.0.1</code> para a própria máquina) e a <strong style="color:var(--text)">porta</strong> em que o receptor está escutando (ex: <code>8000</code>).</p>
+          <p>UDP não confirma a entrega — mensagens podem se perder. Para controle em tempo real isso é uma vantagem: melhor perder um valor antigo do que travar o fluxo esperando confirmação.</p>
+        </div>
+
+        <h3>OSC no Pure Data</h3>
+        <p>O PD Vanilla inclui os objetos de OSC nativamente desde a versão 0.46 — sem bibliotecas externas.</p>
+
+        <div class="pd-objetos">
+          <div class="pd-objeto">
+            <div class="pd-objeto-nome">[netreceive -u -b 8000]</div>
+            <div class="pd-objeto-desc">Abre a porta UDP 8000 para receber dados. As flags: <code>-u</code> = UDP, <code>-b</code> = binário.</div>
+          </div>
+          <div class="pd-objeto">
+            <div class="pd-objeto-nome">[oscparse]</div>
+            <div class="pd-objeto-desc">Decodifica o pacote binário OSC em mensagens PD — endereço seguido dos argumentos.</div>
+          </div>
+          <div class="pd-objeto">
+            <div class="pd-objeto-nome">[route sensor]</div>
+            <div class="pd-objeto-desc">Filtra mensagens pelo primeiro elemento do endereço. <code>[route sensor]</code> → <code>[route luz distancia]</code> separa cada sensor em uma saída.</div>
+          </div>
+          <div class="pd-objeto">
+            <div class="pd-objeto-nome">[oscformat sensor luz]</div>
+            <div class="pd-objeto-desc">Codifica o caminho inverso: monta a mensagem OSC <em>/sensor/luz</em> com os argumentos recebidos.</div>
+          </div>
+          <div class="pd-objeto">
+            <div class="pd-objeto-nome">[netsend -u -b]</div>
+            <div class="pd-objeto-desc">Envia o pacote pela rede. Recebe mensagem <code>connect 127.0.0.1 8000</code> para definir o destino.</div>
+          </div>
+        </div>
+
+        <h3>Patch receptor — passo a passo</h3>
+        <div class="steps">
+          <div class="step">
+            <div class="step-n">1</div>
+            <div class="step-text">Criar <code>[netreceive -u -b 8000]</code> — o PD passa a escutar a porta 8000 em UDP</div>
+          </div>
+          <div class="step">
+            <div class="step-n">2</div>
+            <div class="step-text">Conectar a saída ao <code>[oscparse]</code> — pacotes binários viram mensagens legíveis</div>
+          </div>
+          <div class="step">
+            <div class="step-n">3</div>
+            <div class="step-text">Conectar ao <code>[route sensor]</code> e depois <code>[route luz distancia]</code> — cada endereço sai por uma saída diferente</div>
+          </div>
+          <div class="step">
+            <div class="step-n">4</div>
+            <div class="step-text">Conectar cada saída a uma caixa numérica — os valores chegam em tempo real, prontos para mapear a qualquer parâmetro</div>
+          </div>
+          <div class="step">
+            <div class="step-n">5</div>
+            <div class="step-text"><strong style="color:var(--accent)">Teste:</strong> em outro patch (ou outra máquina da sala), montar o caminho de envio: <code>[oscformat sensor luz]</code> → <code>[netsend -u -b]</code> com <code>[connect 127.0.0.1 8000(</code>. Enviar valores de um slider e ver chegando no receptor.</div>
+          </div>
+        </div>
+
+        <div class="callout">
+          <strong>Atividade:</strong> em duplas, um aluno envia OSC do seu computador para o computador do colega usando o IP da rede local da sala. Um slider em uma máquina controlando a frequência de um oscilador em outra — a primeira experiência de instalação em rede do curso.
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 3 -->
+    <div class="bloco fade-in">
+      <div class="bloco-time">
+        <div class="bloco-time-dur">20min</div>
+        <div class="bloco-time-label">Bloco 3</div>
+      </div>
+      <div class="bloco-line"></div>
+      <div class="bloco-dot"></div>
+      <div class="bloco-body">
+        <div class="bloco-header">
+          <div class="bloco-num">Bloco 03</div>
+          <h2>Revisão — Arduino</h2>
+        </div>
+
+        <p>Retomada rápida dos conceitos da aula 3 antes da integração com o p5.js.</p>
+
+        <ul class="items">
+          <li><strong style="color:var(--text)">setup() e loop()</strong> — configuração única e ciclo contínuo. A mesma estrutura do p5.js.</li>
+          <li><strong style="color:var(--text)">analogRead(A0)</strong> — lê tensão de 0 a 5V no pino analógico, retorna 0 a 1023.</li>
+          <li><strong style="color:var(--text)">Serial.begin(115200)</strong> — inicia a comunicação serial. A velocidade (baud rate) precisa ser idêntica nos dois lados da conexão.</li>
+          <li><strong style="color:var(--text)">Serial.print() / Serial.println()</strong> — envia dados pela serial. O <code>println</code> adiciona quebra de linha <code>\n</code> ao final — o delimitador que o receptor usa para saber onde a mensagem termina.</li>
+          <li><strong style="color:var(--text)">Protoboard</strong> — barramentos de alimentação nas bordas, colunas de 5 furos conectados no centro. Potenciômetro: extremos em 5V e GND, centro no pino analógico.</li>
+        </ul>
+
+        <div class="callout">
+          <strong>Verificação rápida:</strong> antes de seguir, cada aluno sobe um sketch que imprime o valor de A0 na serial e confirma no Serial Monitor (<code>Tools → Serial Monitor</code>, baud 115200) que os valores variam ao girar o potenciômetro. <em>Fechar o Serial Monitor depois do teste</em> — a porta não pode estar ocupada quando o navegador for conectar.
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 4 -->
+    <div class="bloco fade-in">
+      <div class="bloco-time">
+        <div class="bloco-time-dur">40min</div>
+        <div class="bloco-time-label">Bloco 4</div>
+      </div>
+      <div class="bloco-line"></div>
+      <div class="bloco-dot"></div>
+      <div class="bloco-body">
+        <div class="bloco-header">
+          <div class="bloco-num">Bloco 04</div>
+          <h2>Arduino + p5.js — um sensor analógico</h2>
+        </div>
+
+        <p>A biblioteca <strong style="color:var(--text)">p5.webserial.js</strong> conecta o p5.js diretamente à porta serial do Arduino usando a Web Serial API do navegador — sem software intermediário. Funciona no Chrome e no Edge; o Firefox e o Safari não suportam Web Serial.</p>
+
+        <div class="conceito">
+          <div class="conceito-label">Conceito</div>
+          <div class="conceito-title">Por que o botão de conectar</div>
+          <p>Por segurança, o navegador só permite acesso à porta serial após um gesto explícito do usuário — um clique. Por isso todo sketch com Web Serial tem um botão de conexão: o <code>port.open()</code> precisa ser chamado dentro de um evento de interação, nunca direto no <code>setup()</code>.</p>
+        </div>
+
+        <h3>index.html — carregando a biblioteca</h3>
+        <div class="code-block">
+          <div class="code-label">index.html · p5.webserial via CDN</div>
+          &lt;<span class="c-keyword">script</span> src=<span class="c-string">"https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.0/p5.min.js"</span>&gt;&lt;/<span class="c-keyword">script</span>&gt;<br>
+          &lt;<span class="c-keyword">script</span> src=<span class="c-string">"https://unpkg.com/@gohai/p5.webserial@^1/libraries/p5.webserial.js"</span>&gt;&lt;/<span class="c-keyword">script</span>&gt;<br>
+          &lt;<span class="c-keyword">script</span> src=<span class="c-string">"sketch.js"</span>&gt;&lt;/<span class="c-keyword">script</span>&gt;
+        </div>
+
+        <h3>Arduino — um sensor</h3>
+        <div class="code-block">
+          <div class="code-label">sketch_um_sensor.ino · potenciômetro no A0</div>
+          <span class="c-keyword">void</span> <span class="c-fn">setup</span>() {<br>
+          &nbsp;&nbsp;<span class="c-fn">Serial.begin</span>(<span class="c-num">115200</span>);<br>
+          }<br>
+          <br>
+          <span class="c-keyword">void</span> <span class="c-fn">loop</span>() {<br>
+          &nbsp;&nbsp;<span class="c-type">int</span> pot = <span class="c-fn">analogRead</span>(<span class="c-keyword">A0</span>);<br>
+          &nbsp;&nbsp;<span class="c-fn">Serial.println</span>(pot); <span class="c-comment">// envia "512\n"</span><br>
+          &nbsp;&nbsp;<span class="c-fn">delay</span>(<span class="c-num">20</span>); <span class="c-comment">// ~50 leituras por segundo</span><br>
+          }
+        </div>
+
+        <h3>p5.js — recebendo o valor</h3>
+        <div class="code-block">
+          <div class="code-label">sketch.js · um sensor controlando o diâmetro de um círculo</div>
+          <span class="c-keyword">let</span> port;<br>
+          <span class="c-keyword">let</span> pot = <span class="c-num">0</span>;<br>
+          <br>
+          <span class="c-keyword">function</span> <span class="c-fn">setup</span>() {<br>
+          &nbsp;&nbsp;<span class="c-fn">createCanvas</span>(<span class="c-num">400</span>, <span class="c-num">400</span>);<br>
+          &nbsp;&nbsp;port = <span class="c-fn">createSerial</span>();<br>
+          &nbsp;&nbsp;<span class="c-keyword">let</span> btn = <span class="c-fn">createButton</span>(<span class="c-string">'conectar arduino'</span>);<br>
+          &nbsp;&nbsp;btn.<span class="c-fn">mousePressed</span>(() =&gt; port.<span class="c-fn">open</span>(<span class="c-num">115200</span>));<br>
+          }<br>
+          <br>
+          <span class="c-keyword">function</span> <span class="c-fn">draw</span>() {<br>
+          &nbsp;&nbsp;<span class="c-fn">background</span>(<span class="c-num">220</span>);<br>
+          &nbsp;&nbsp;<br>
+          &nbsp;&nbsp;<span class="c-comment">// lê todas as linhas disponíveis, guarda só a última completa</span><br>
+          &nbsp;&nbsp;<span class="c-keyword">let</span> str = port.<span class="c-fn">readUntil</span>(<span class="c-string">"\n"</span>);<br>
+          &nbsp;&nbsp;<span class="c-keyword">let</span> ultimaLinha = <span class="c-string">""</span>;<br>
+          &nbsp;&nbsp;<span class="c-keyword">while</span> (str.length &gt; <span class="c-num">0</span>) {<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;ultimaLinha = str;<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;str = port.<span class="c-fn">readUntil</span>(<span class="c-string">"\n"</span>);<br>
+          &nbsp;&nbsp;}<br>
+          &nbsp;&nbsp;<br>
+          &nbsp;&nbsp;<span class="c-keyword">if</span> (ultimaLinha.length &gt; <span class="c-num">0</span>) {<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;pot = <span class="c-fn">int</span>(<span class="c-fn">trim</span>(ultimaLinha));<br>
+          &nbsp;&nbsp;}<br>
+          &nbsp;&nbsp;<br>
+          &nbsp;&nbsp;<span class="c-comment">// mapeia 0–1023 para o diâmetro</span><br>
+          &nbsp;&nbsp;<span class="c-keyword">let</span> diametro = <span class="c-fn">map</span>(pot, <span class="c-num">0</span>, <span class="c-num">1023</span>, <span class="c-num">10</span>, <span class="c-num">300</span>);<br>
+          &nbsp;&nbsp;<span class="c-fn">fill</span>(<span class="c-num">200</span>, <span class="c-num">77</span>, <span class="c-num">10</span>);<br>
+          &nbsp;&nbsp;<span class="c-fn">noStroke</span>();<br>
+          &nbsp;&nbsp;<span class="c-fn">circle</span>(width / <span class="c-num">2</span>, height / <span class="c-num">2</span>, diametro);<br>
+          }
+        </div>
+
+        <div class="callout">
+          <strong>O loop de leitura importa:</strong> o Arduino envia ~50 valores por segundo, mas o draw() roda 60 vezes por segundo — nem sempre em sincronia. Se o sketch ler apenas uma linha por frame, as linhas não lidas acumulam no buffer e o círculo responde com atraso crescente. O laço <code>while</code> drena o buffer inteiro e usa só a última linha completa — o valor mais recente, sem lag.
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 5 -->
+    <div class="bloco fade-in">
+      <div class="bloco-time">
+        <div class="bloco-time-dur">45min</div>
+        <div class="bloco-time-label">Bloco 5</div>
+      </div>
+      <div class="bloco-dot" style="background:var(--accent2)"></div>
+      <div class="bloco-body">
+        <div class="bloco-header">
+          <div class="bloco-num">Bloco 05</div>
+          <h2>Três sensores simultâneos</h2>
+        </div>
+
+        <p>Para enviar múltiplos sensores pela mesma porta serial, o padrão é o <strong style="color:var(--text)">CSV por linha</strong>: os valores separados por vírgula, a linha fechada com <code>\n</code>. O receptor divide a linha pelas vírgulas e distribui os valores.</p>
+
+        <div class="osc-exemplo">
+          <span class="osc-addr">512,847,103\n</span> <span class="osc-com">← pot, LDR, pot2 — uma leitura completa por linha</span>
+        </div>
+
+        <h3>Arduino — três sensores</h3>
+        <div class="code-block">
+          <div class="code-label">sketch_tres_sensores.ino · potenciômetro (A0), LDR (A1), pot2 (A2)</div>
+          <span class="c-comment">// Três sensores: potenciômetro (A0), LDR (A1), outro pot (A2)</span><br>
+          <span class="c-comment">// Formato enviado: "512,847,103\n"</span><br>
+          <br>
+          <span class="c-keyword">void</span> <span class="c-fn">setup</span>() {<br>
+          &nbsp;&nbsp;<span class="c-fn">Serial.begin</span>(<span class="c-num">115200</span>);<br>
+          }<br>
+          <br>
+          <span class="c-keyword">void</span> <span class="c-fn">loop</span>() {<br>
+          &nbsp;&nbsp;<span class="c-type">int</span> pot = <span class="c-fn">analogRead</span>(<span class="c-keyword">A0</span>);<br>
+          &nbsp;&nbsp;<span class="c-type">int</span> ldr = <span class="c-fn">analogRead</span>(<span class="c-keyword">A1</span>);<br>
+          &nbsp;&nbsp;<span class="c-type">int</span> pot2 = <span class="c-fn">analogRead</span>(<span class="c-keyword">A2</span>);<br>
+          <br>
+          &nbsp;&nbsp;<span class="c-fn">Serial.print</span>(pot);<br>
+          &nbsp;&nbsp;<span class="c-fn">Serial.print</span>(<span class="c-string">","</span>);<br>
+          &nbsp;&nbsp;<span class="c-fn">Serial.print</span>(ldr);<br>
+          &nbsp;&nbsp;<span class="c-fn">Serial.print</span>(<span class="c-string">","</span>);<br>
+          &nbsp;&nbsp;<span class="c-fn">Serial.println</span>(pot2); <span class="c-comment">// println só no último, fecha a linha com \n</span><br>
+          &nbsp;&nbsp;<span class="c-fn">delay</span>(<span class="c-num">20</span>);<br>
+          }
+        </div>
+
+        <h3>p5.js — recebendo e distribuindo os três valores</h3>
+        <div class="code-block">
+          <div class="code-label">sketch.js · cada sensor controla uma propriedade diferente</div>
+          <span class="c-keyword">let</span> port;<br>
+          <span class="c-keyword">let</span> pot = <span class="c-num">0</span>, ldr = <span class="c-num">0</span>, pot2 = <span class="c-num">0</span>;<br>
+          <br>
+          <span class="c-keyword">function</span> <span class="c-fn">setup</span>() {<br>
+          &nbsp;&nbsp;<span class="c-fn">createCanvas</span>(<span class="c-num">400</span>, <span class="c-num">400</span>);<br>
+          &nbsp;&nbsp;port = <span class="c-fn">createSerial</span>();<br>
+          &nbsp;&nbsp;<span class="c-keyword">let</span> btn = <span class="c-fn">createButton</span>(<span class="c-string">'conectar arduino'</span>);<br>
+          &nbsp;&nbsp;btn.<span class="c-fn">mousePressed</span>(() =&gt; port.<span class="c-fn">open</span>(<span class="c-num">115200</span>));<br>
+          }<br>
+          <br>
+          <span class="c-keyword">function</span> <span class="c-fn">draw</span>() {<br>
+          &nbsp;&nbsp;<span class="c-fn">background</span>(<span class="c-num">220</span>);<br>
+          &nbsp;&nbsp;<br>
+          &nbsp;&nbsp;<span class="c-comment">// lê TODAS as linhas disponíveis, guarda só a última completa</span><br>
+          &nbsp;&nbsp;<span class="c-keyword">let</span> str = port.<span class="c-fn">readUntil</span>(<span class="c-string">"\n"</span>);<br>
+          &nbsp;&nbsp;<span class="c-keyword">let</span> ultimaLinha = <span class="c-string">""</span>;<br>
+          &nbsp;&nbsp;<span class="c-keyword">while</span> (str.length &gt; <span class="c-num">0</span>) {<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;ultimaLinha = str;<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;str = port.<span class="c-fn">readUntil</span>(<span class="c-string">"\n"</span>);<br>
+          &nbsp;&nbsp;}<br>
+          &nbsp;&nbsp;<br>
+          &nbsp;&nbsp;<span class="c-keyword">if</span> (ultimaLinha.length &gt; <span class="c-num">0</span>) {<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="c-keyword">let</span> valores = <span class="c-fn">split</span>(<span class="c-fn">trim</span>(ultimaLinha), <span class="c-string">","</span>);<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="c-keyword">if</span> (valores.length == <span class="c-num">3</span>) {<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pot&nbsp;&nbsp;= <span class="c-fn">int</span>(valores[<span class="c-num">0</span>]);<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ldr&nbsp;&nbsp;= <span class="c-fn">int</span>(valores[<span class="c-num">1</span>]);<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pot2 = <span class="c-fn">int</span>(valores[<span class="c-num">2</span>]);<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+          &nbsp;&nbsp;}<br>
+          &nbsp;&nbsp;<br>
+          &nbsp;&nbsp;<span class="c-comment">// cada sensor controla uma propriedade diferente</span><br>
+          &nbsp;&nbsp;<span class="c-keyword">let</span> diametro = <span class="c-fn">map</span>(pot, <span class="c-num">0</span>, <span class="c-num">1023</span>, <span class="c-num">10</span>, <span class="c-num">300</span>);<br>
+          &nbsp;&nbsp;<span class="c-keyword">let</span> cinza&nbsp;&nbsp;&nbsp;&nbsp;= <span class="c-fn">map</span>(ldr, <span class="c-num">0</span>, <span class="c-num">1023</span>, <span class="c-num">0</span>, <span class="c-num">255</span>);<br>
+          &nbsp;&nbsp;<span class="c-keyword">let</span> posX&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= <span class="c-fn">map</span>(pot2, <span class="c-num">0</span>, <span class="c-num">1023</span>, <span class="c-num">0</span>, width);<br>
+          &nbsp;&nbsp;<br>
+          &nbsp;&nbsp;<span class="c-fn">fill</span>(cinza);<br>
+          &nbsp;&nbsp;<span class="c-fn">circle</span>(posX, height / <span class="c-num">2</span>, diametro);<br>
+          }
+        </div>
+
+        <h3>Anatomia do código — as funções chave</h3>
+        <div class="pd-objetos">
+          <div class="pd-objeto">
+            <div class="pd-objeto-nome">createSerial()</div>
+            <div class="pd-objeto-desc">Cria o objeto de porta serial do p5.webserial. Não abre a conexão — só prepara.</div>
+          </div>
+          <div class="pd-objeto">
+            <div class="pd-objeto-nome">port.open(115200)</div>
+            <div class="pd-objeto-desc">Abre o diálogo do navegador para o usuário escolher a porta. O baud rate precisa ser o mesmo do <code>Serial.begin()</code> no Arduino.</div>
+          </div>
+          <div class="pd-objeto">
+            <div class="pd-objeto-nome">port.readUntil("\n")</div>
+            <div class="pd-objeto-desc">Lê do buffer até encontrar a quebra de linha. Retorna string vazia se não houver linha completa disponível.</div>
+          </div>
+          <div class="pd-objeto">
+            <div class="pd-objeto-nome">split(str, ",")</div>
+            <div class="pd-objeto-desc">Divide a string pelas vírgulas, retorna array: <em>"512,847,103"</em> → <em>["512","847","103"]</em>.</div>
+          </div>
+          <div class="pd-objeto">
+            <div class="pd-objeto-nome">trim(str)</div>
+            <div class="pd-objeto-desc">Remove espaços e caracteres invisíveis (como <code>\r</code>) das pontas da string — essencial antes de converter para número.</div>
+          </div>
+          <div class="pd-objeto">
+            <div class="pd-objeto-nome">int(str)</div>
+            <div class="pd-objeto-desc">Converte a string em número inteiro. <em>"512"</em> → <em>512</em>.</div>
+          </div>
+          <div class="pd-objeto">
+            <div class="pd-objeto-nome">valores.length == 3</div>
+            <div class="pd-objeto-desc">Validação: só usa a linha se ela tiver exatamente 3 valores — protege contra linhas truncadas na conexão.</div>
+          </div>
+        </div>
+
+        <div class="callout">
+          <strong>Atividade final:</strong> substituir o círculo por uma composição própria — cada sensor controlando uma propriedade visual diferente (cor, rotação, quantidade de elementos, velocidade de animação). A pergunta de projeto: qual gesto físico faz sentido para cada parâmetro? Girar um potenciômetro e cobrir um LDR são ações expressivamente diferentes.
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <hr class="divider">
+
+  <h3 style="margin-top:0;margin-bottom:16px">Materiais de apoio</h3>
+  <div class="links-grid">
+    <a class="link-item" href="https://github.com/gohai/p5.webserial" target="_blank">
+      <span class="link-icon">📁</span>
+      <div class="link-body">
+        <div>p5.webserial — GitHub</div>
+        <div class="link-desc">Biblioteca de comunicação serial para p5.js via Web Serial API</div>
+      </div>
+      <span class="link-arrow">↗</span>
+    </a>
+    <a class="link-item" href="https://opensoundcontrol.stanford.edu/" target="_blank">
+      <span class="link-icon">📄</span>
+      <div class="link-body">
+        <div>OSC — especificação oficial</div>
+        <div class="link-desc">opensoundcontrol.stanford.edu · documentação do protocolo</div>
+      </div>
+      <span class="link-arrow">↗</span>
+    </a>
+    <a class="link-item" href="https://puredata.info/docs/manuals/pd/x4.htm" target="_blank">
+      <span class="link-icon">📄</span>
+      <div class="link-body">
+        <div>Pure Data — objetos de rede</div>
+        <div class="link-desc">netsend, netreceive, oscparse, oscformat na documentação do PD</div>
+      </div>
+      <span class="link-arrow">↗</span>
+    </a>
+    <a class="link-item" href="https://www.arduino.cc/reference/en/language/functions/communication/serial/" target="_blank">
+      <span class="link-icon">📄</span>
+      <div class="link-body">
+        <div>Arduino — Serial reference</div>
+        <div class="link-desc">Documentação completa da comunicação serial do Arduino</div>
+      </div>
+      <span class="link-arrow">↗</span>
+    </a>
+    <a class="link-item" href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API" target="_blank">
+      <span class="link-icon">📄</span>
+      <div class="link-body">
+        <div>Web Serial API — MDN</div>
+        <div class="link-desc">Documentação da API de serial do navegador (Chrome/Edge)</div>
+      </div>
+      <span class="link-arrow">↗</span>
+    </a>
+  </div>
+
+</main>
+
+<script>
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.06 });
+document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+</script>
+<script src="nav.js"></script>
+</body>
+</html>
