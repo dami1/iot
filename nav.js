@@ -28,9 +28,9 @@ const CURSO = {
     },
     {
       num: 5,
-      titulo: "App mobile — MobMuPlat e p5.js",
+      titulo: "Protocolos: MIDI, Serial e OSC · Arduino + p5.js",
       arquivo: "aula05.html",
-      disponivel: false,
+      disponivel: true,
     },
     {
       num: 6,
