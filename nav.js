@@ -34,9 +34,9 @@ const CURSO = {
     },
     {
       num: 6,
-      titulo: "IoT — conceitos e plataformas",
+      titulo: "Prompts para código e plataformas mobile",
       arquivo: "aula06.html",
-      disponivel: false,
+      disponivel: true,
     },
     {
       num: 7,
