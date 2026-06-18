@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aula 6 — Prompts para código e plataformas mobile</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f8f7f4;
+    --surface: #ffffff;
+    --surface2: #f0ede8;
+    --border: #d8d4cc;
+    --border2: #b8b4ac;
+    --text: #18180f;
+    --muted: #666660;
+    --dim: #999990;
+    --accent: #c84d0a;
+    --accent2: #a03a06;
+    --font-mono: 'DM Mono', monospace;
+    --font-sans: 'DM Sans', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  main { max-width: 780px; margin: 0 auto; padding: 0 32px 100px; }
+
+  .hero {
+    padding: 56px 0 40px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 56px;
+  }
+
+  .hero-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .hero-eyebrow::after {
+    content: '';
+    height: 1px;
+    width: 40px;
+    background: var(--accent);
+    opacity: .4;
+    display: block;
+  }
+
+  h1 {
+    font-size: clamp(24px, 4vw, 36px);
+    font-weight: 300;
+    line-height: 1.2;
+    letter-spacing: -.02em;
+    color: var(--text);
+    margin-bottom: 20px;
+  }
+
+  h1 em { font-style: normal; color: var(--accent); }
+
+  .hero-meta { display: flex; gap: 20px; flex-wrap: wrap; }
+  .hero-meta span {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .hero-meta span::before { content: '·'; color: var(--accent); }
+
+  /* ── PARTE DIVIDER ── */
+  .parte-divider {
+    margin: 0 0 48px;
+    padding: 20px 24px;
+    background: var(--accent);
+    border-radius: 8px;
+    color: #fff;
+  }
+
+  .parte-divider .parte-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    opacity: .8;
+    margin-bottom: 4px;
+  }
+
+  .parte-divider .parte-title {
+    font-size: 19px;
+    font-weight: 400;
+  }
+
+  .timeline { display: flex; flex-direction: column; }
+
+  .bloco {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 0 28px;
+    position: relative;
+    padding-bottom: 60px;
+  }
+
+  .bloco:last-child { padding-bottom: 0; }
+  .bloco-time { padding-top: 4px; text-align: right; }
+  .bloco-time-label { font-family: var(--font-mono); font-size: 10px; color: var(--dim); }
+  .bloco-time-dur { font-family: var(--font-mono); font-size: 12px; color: var(--muted); font-weight: 500; }
+
+  .bloco-line {
+    position: absolute;
+    left: 80px;
+    top: 8px;
+    bottom: 0;
+    width: 1px;
+    background: var(--border);
+  }
+
+  .bloco:last-child .bloco-line { display: none; }
+
+  .bloco-dot {
+    position: absolute;
+    left: 76px;
+    top: 6px;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--bg);
+  }
+
+  .bloco-body { padding-left: 28px; }
+  .bloco-header { margin-bottom: 24px; }
+
+  .bloco-num {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  h2 { font-size: 20px; font-weight: 400; color: var(--text); letter-spacing: -.01em; line-height: 1.3; }
+
+  h3 {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    margin: 32px 0 14px;
+    font-family: var(--font-mono);
+  }
+
+  p { color: var(--text); margin-bottom: 14px; font-size: 15px; }
+
+  ul.items {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+
+  ul.items li {
+    display: flex;
+    gap: 12px;
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  ul.items li::before {
+    content: '→';
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    flex-shrink: 0;
+    margin-top: 3px;
+  }
+
+  .callout {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.65;
+  }
+
+  .callout strong { color: var(--accent); font-weight: 500; }
+  .callout code {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 1px 6px;
+    color: var(--accent);
+  }
+
+  .code-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.9;
+    overflow-x: auto;
+  }
+
+  .code-block .c-comment { color: var(--dim); font-style: italic; }
+  .code-block .c-keyword { color: var(--accent); font-weight: 500; }
+  .code-block .c-fn      { color: #5a7a3a; }
+  .code-block .c-num     { color: #a05020; }
+  .code-block .c-string  { color: #507a50; }
+  .code-block .c-text    { color: var(--muted); }
+
+  .code-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--dim);
+    margin-bottom: 14px;
+  }
+
+  /* ── PROMPT COMPARE ── */
+  .prompt-compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  .prompt-card {
+    border-radius: 8px;
+    padding: 16px 18px;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .prompt-card.fraco {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+  }
+
+  .prompt-card.bom {
+    background: rgba(200,77,10,.05);
+    border: 1px solid rgba(200,77,10,.25);
+  }
+
+  .prompt-card .pc-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    margin-bottom: 8px;
+  }
+
+  .prompt-card.fraco .pc-label { color: var(--dim); }
+  .prompt-card.bom .pc-label { color: var(--accent); }
+  .prompt-card .pc-text { color: var(--text); font-style: italic; }
+
+  /* ── PROMPT BLOCO ── */
+  .prompt-final {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 4px;
+    margin-bottom: 24px;
+  }
+
+  .prompt-final-inner {
+    background: var(--surface2);
+    border-radius: 6px;
+    padding: 20px 24px;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  .prompt-final-inner strong { color: var(--accent); font-weight: 500; }
+  .prompt-final-inner .pf-section {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+  }
+  .prompt-final-inner .pf-section:first-child { margin-top: 0; padding-top: 0; border-top: none; }
+  .prompt-final-inner ul { margin: 6px 0 0 18px; }
+  .prompt-final-inner li { margin-bottom: 3px; }
+
+  /* ── CONCEITO ── */
+  .conceito {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+  }
+
+  .conceito-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+
+  .conceito-title { font-size: 17px; font-weight: 400; color: var(--text); margin-bottom: 10px; }
+  .conceito p { font-size: 14px; color: var(--muted); margin-bottom: 8px; line-height: 1.65; }
+  .conceito p:last-child { margin-bottom: 0; }
+  .conceito code {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 3px;
+    padding: 1px 6px;
+    color: var(--accent);
+  }
+
+  /* ── CODE TOGGLE ── */
+  .code-toggle {
+    margin-bottom: 10px;
+  }
+
+  .code-toggle summary {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--accent);
+    cursor: pointer;
+    padding: 8px 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    list-style: none;
+    user-select: none;
+    transition: border-color .15s;
+  }
+
+  .code-toggle summary:hover { border-color: var(--accent); }
+  .code-toggle summary::-webkit-details-marker { display: none; }
+  .code-toggle summary::before { content: '▸ '; color: var(--dim); }
+  .code-toggle[open] summary::before { content: '▾ '; }
+
+  .code-mono {
+    margin-top: 8px;
+    margin-bottom: 0;
+    white-space: nowrap;
+  }
+
+  /* ── SKETCH EMBED ── */
+  .sketch {
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 24px;
+    background: var(--surface);
+  }
+
+  .sketch-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .sketch-title {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: .04em;
+  }
+
+  .sketch-btns { display: flex; gap: 6px; }
+
+  .sketch-btn {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 5px 11px;
+    border: 1px solid var(--border2);
+    border-radius: 4px;
+    background: var(--surface);
+    color: var(--muted);
+    cursor: pointer;
+    transition: border-color .15s, color .15s;
+  }
+
+  .sketch-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .sketch iframe {
+    display: block;
+    width: 100%;
+    height: 420px;
+    border: none;
+    background: #1a1a18;
+  }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 52px 0 36px; }
+  .links-grid { display: flex; flex-direction: column; gap: 6px; }
+
+  .link-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    text-decoration: none;
+    color: var(--text);
+    font-size: 13px;
+    transition: border-color .15s, background .15s;
+  }
+
+  .link-item:hover { border-color: var(--border2); background: var(--surface2); }
+  .link-icon { font-family: var(--font-mono); font-size: 13px; color: var(--accent); flex-shrink: 0; width: 20px; text-align: center; }
+  .link-desc { font-size: 11px; color: var(--muted); margin-top: 2px; font-family: var(--font-mono); }
+  .link-body { flex: 1; }
+  .link-arrow { font-size: 11px; color: var(--dim); margin-left: auto; }
+
+  .fade-in { opacity: 0; transform: translateY(14px); transition: opacity .5s ease, transform .5s ease; }
+  .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 640px) {
+    main { padding: 0 18px 80px; }
+    .bloco { grid-template-columns: 60px 1fr; }
+    .prompt-compare { grid-template-columns: 1fr; }
+    .sketch iframe { height: 380px; }
+  }
+</style>
+</head>
+<body>
+
+<main>
+
+  <div class="hero">
+    <div class="hero-eyebrow">Aula 06 · Semana 3 · 3 horas</div>
+    <h1>Prompts para código<br>e plataformas <em>mobile</em></h1>
+    <div class="hero-meta">
+      <span>Formato laboratório</span>
+      <span>Celular para testar</span>
+      <span>Chrome ou Safari mobile</span>
+    </div>
+  </div>
+
+  <!-- ============ PARTE 1 ============ -->
+  <div class="parte-divider">
+    <div class="parte-label">Parte 1 · 75 min</div>
+    <div class="parte-title">Formulando bons prompts para escrita de código</div>
+  </div>
+
+  <div class="timeline">
+
+    <!-- BLOCO 1 -->
+    <div class="bloco fade-in">
+      <div class="bloco-time">
+        <div class="bloco-time-dur">25min</div>
+        <div class="bloco-time-label">Bloco 1</div>
+      </div>
+      <div class="bloco-line"></div>
+      <div class="bloco-dot"></div>
+      <div class="bloco-body">
+        <div class="bloco-header">
+          <div class="bloco-num">Bloco 01</div>
+          <h2>Por que a forma do pedido importa</h2>
+        </div>
+
+        <p>Usar IA para escrever código não é delegar o pensamento — é organizá-lo. O risco real de um prompt mal formulado não é a IA "errar": é gerar um código que funciona mas que ninguém entende. Código que não se entende não se consegue depurar, adaptar nem defender. Para quem trabalha com experiência do usuário, isso é o oposto de ter autoria sobre o projeto.</p>
+
+        <div class="conceito">
+          <div class="conceito-label">Princípio</div>
+          <div class="conceito-title">O prompt é o algoritmo verbalizado</div>
+          <p>As mesmas sete etapas de estruturação de algoritmo da primeira aula — definir o objetivo, mapear entradas e saídas, decompor em partes, escrever o fluxo em linguagem natural, identificar loops e condições, implementar por partes, refinar — são exatamente o que um bom prompt contém.</p>
+          <p>Quem sabe estruturar um algoritmo já sabe estruturar um prompt. O prompt vago falha porque pula a decomposição; o prompt bom é a decomposição escrita em palavras.</p>
+        </div>
+
+        <h3>Anatomia de um bom prompt</h3>
+        <ul class="items">
+          <li><strong style="color:var(--text)">Contexto técnico</strong> — qual linguagem, qual ambiente, qual versão. "Em p5.js, no editor online" é diferente de "em JavaScript".</li>
+          <li><strong style="color:var(--text)">Objetivo específico</strong> — o que o sistema faz, descrito sem ambiguidade.</li>
+          <li><strong style="color:var(--text)">Bibliotecas e dependências</strong> — o que incluir, e em que versão. Especificar a versão evita que a IA misture sintaxes de APIs diferentes.</li>
+          <li><strong style="color:var(--text)">Estrutura de dados</strong> — pedir classes, atributos e métodos com nomes específicos faz a IA gerar código que você reconhece.</li>
+          <li><strong style="color:var(--text)">Lógica em linguagem natural</strong> — descrever os loops e condicionais em português; a IA traduz, mas a lógica é sua.</li>
+          <li><strong style="color:var(--text)">Decisões estéticas</strong> — a parte que a IA não inventa sozinha. É onde o design entra.</li>
+          <li><strong style="color:var(--text)">Pedido de explicação</strong> — pedir que explique partes específicas transforma o uso em aprendizado.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- BLOCO 2 -->
+    <div class="bloco fade-in">
+      <div class="bloco-time">
+        <div class="bloco-time-dur">50min</div>
+        <div class="bloco-time-label">Bloco 2</div>
+      </div>
+      <div class="bloco-line"></div>
+      <div class="bloco-dot"></div>
+      <div class="bloco-body">
+        <div class="bloco-header">
+          <div class="bloco-num">Bloco 02</div>
+          <h2>Estudo de caso — partículas que saem da boca</h2>
+        </div>
+
+        <p>O objetivo bruto: <em>"partículas que saem da boca quando ela abre, e trocam de cor de acordo com o volume"</em>. Uma frase de intenção, como a prospecção de projeto. O trabalho é transformar isso em especificação — passando pelas mesmas etapas de decomposição de um algoritmo.</p>
+
+        <div class="prompt-compare">
+          <div class="prompt-card fraco">
+            <div class="pc-label">Prompt fraco</div>
+            <div class="pc-text">"faz partículas que saem da boca e mudam de cor com o som"</div>
+          </div>
+          <div class="prompt-card bom">
+            <div class="pc-label">Prompt estruturado</div>
+            <div class="pc-text">contexto + biblioteca + versão + classe especificada + loops descritos + mapeamento sensorial + decisões estéticas + pedido de explicação</div>
+          </div>
+        </div>
+
+        <p>O primeiro gera algo provavelmente quebrado ou genérico. O segundo gera código que se entende, se depura e se adapta — porque o sistema inteiro foi pensado antes de pedir.</p>
+
+        <h3>Decompondo antes de escrever</h3>
+        <ul class="items">
+          <li><strong style="color:var(--text)">Entradas:</strong> câmera (detectar a boca e medir abertura) + microfone (medir volume)</li>
+          <li><strong style="color:var(--text)">Processamento:</strong> detecção facial → calcular abertura da boca → emitir partículas; leitura de volume → definir cor</li>
+          <li><strong style="color:var(--text)">Saída:</strong> partículas animadas na tela</li>
+          <li><strong style="color:var(--text)">Estrutura:</strong> uma classe para a partícula, um array para guardar várias</li>
+        </ul>
+
+        <h3>O prompt completo montado</h3>
+        <p>O resultado de passar a intenção por todas as etapas — como o aluno entregaria à IA:</p>
+
+        <div class="prompt-final">
+          <div class="prompt-final-inner">
+            <div class="pf-section">
+              Quero criar um sketch em <strong>p5.js</strong> onde partículas saem da boca de uma pessoa quando ela abre a boca, e a cor das partículas muda de acordo com o volume do microfone.
+            </div>
+            <div class="pf-section">
+              <strong>Ambiente e bibliotecas:</strong> vou rodar no editor online do p5.js. Use a biblioteca <strong>ml5.js</strong> para detecção facial com <code>ml5.faceMesh()</code> (API atual do ml5 v1, com <code>detectStart</code>) e a <strong>p5.sound</strong> para captar o microfone. Diga também quais tags <code>&lt;script&gt;</code> incluir no index.html e em que ordem.
+            </div>
+            <div class="pf-section">
+              <strong>Estrutura — classe Particula:</strong> crie uma classe <code>Particula</code> com:
+              <ul>
+                <li>atributos: posição (x, y), velocidade (vx, vy), cor, tamanho, tempo de vida</li>
+                <li>método <code>update()</code> que move a partícula, aplica leve gravidade e diminui o tempo de vida</li>
+                <li>método <code>display()</code> que desenha com transparência proporcional ao tempo de vida (fade out)</li>
+                <li>método <code>estaMorta()</code> que retorna true quando a vida chega a zero</li>
+              </ul>
+            </div>
+            <div class="pf-section">
+              <strong>Lógica no draw() — loops e condicionais:</strong>
+              <ul>
+                <li>rode o faceMesh para detectar o rosto</li>
+                <li>calcule a abertura da boca pela distância entre o lábio superior e o inferior</li>
+                <li><strong>se</strong> a abertura passar de um limiar, crie várias partículas na posição da boca e adicione a um array — quantidade proporcional à abertura</li>
+                <li>use um <strong>loop</strong> para percorrer o array, chamando update() e display()</li>
+                <li><strong>remova</strong> as partículas mortas usando um loop reverso, para não pular índices</li>
+              </ul>
+            </div>
+            <div class="pf-section">
+              <strong>Mapeamento do volume para a cor:</strong> capte o volume com <code>getLevel()</code> (0 a 1). No momento em que cada partícula nasce, defina sua cor a partir do volume: baixo gera tons frios (azul), alto gera tons quentes (laranja). Use o modo HSB para a transição de matiz.
+            </div>
+            <div class="pf-section">
+              <strong>Estética:</strong>
+              <ul>
+                <li>fundo escuro para as cores brilharem</li>
+                <li>tamanho com leve variação aleatória entre partículas</li>
+                <li>velocidade inicial espalhada num leque a partir da boca</li>
+                <li>fade out suave acompanhando o tempo de vida</li>
+              </ul>
+            </div>
+            <div class="pf-section">
+              Depois de escrever o código, <strong>me explique</strong> o cálculo da abertura da boca e o loop reverso de remoção — quero entender essas duas partes para adaptar depois.
+            </div>
+          </div>
+        </div>
+
+        <div class="callout">
+          <strong>O que observar:</strong> o prompt nomeia a estratégia (loop reverso, distância entre pontos) mas deixa a sintaxe para a IA. Você controla a arquitetura; a IA preenche o como. E a última frase — pedir explicação de duas partes específicas — é o que transforma delegação em aprendizado.
+        </div>
+
+        <div class="callout">
+          <strong>Atividade:</strong> partindo de um objetivo próprio, cada aluno escreve o prompt decomposto seguindo os sete blocos. Testar, ler criticamente o resultado, e iterar descrevendo o sintoma do erro ("o círculo pisca", "dá undefined na linha X") em vez de pedir "conserta".
+        </div>
+
+        <div class="callout">
+          <strong>Síntese:</strong> o prompt não é onde você delega o pensamento — é onde você o organiza.
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ============ PARTE 2 ============ -->
+  <div class="parte-divider" style="margin-top:64px">
+    <div class="parte-label">Parte 2 · 105 min</div>
+    <div class="parte-title">Plataformas mobile — touch e sensores do celular</div>
+  </div>
+
+  <div class="timeline">
+
+    <!-- BLOCO 3 -->
+    <div class="bloco fade-in">
+      <div class="bloco-time">
+        <div class="bloco-time-dur">15min</div>
+        <div class="bloco-time-label">Bloco 3</div>
+      </div>
+      <div class="bloco-line"></div>
+      <div class="bloco-dot"></div>
+      <div class="bloco-body">
+        <div class="bloco-header">
+          <div class="bloco-num">Bloco 03</div>
+          <h2>O celular como interface</h2>
+        </div>
+
+        <p>O smartphone é uma das interfaces mais ricas em sensores que existe — tela multitoque, acelerômetro, giroscópio, microfone, câmera, GPS, bússola — e cabe no bolso. Para o campo da experiência do usuário, é um território fértil: o público já carrega o dispositivo, já sabe operá-lo, e ele pode virar instrumento, controle ou sensor de uma instalação.</p>
+
+        <p>A boa notícia: para a maioria dos casos em p5.js, não é preciso biblioteca nenhuma. O p5.js já acessa o touch e os sensores de movimento nativamente. Bibliotecas externas entram só quando se quer gestos compostos prontos.</p>
+
+        <div class="callout">
+          <strong>Sobre o Hammer.js:</strong> por anos foi a referência para gestos touch, mas está sem manutenção desde 2016. Para gestos compostos hoje, as alternativas mantidas são <strong>Interact.js</strong> (manipulação de elementos, pinça, rotação) e <strong>@use-gesture</strong>. Mas para interação baseada em canvas — o caso do p5.js — o touch nativo costuma ser mais direto e transparente.
+        </div>
+
+        <div class="callout">
+          <strong>Como testar:</strong> os exemplos abaixo rodam embarcados nesta página. Para sentir os sensores de verdade, abrir esta aula no <em>navegador do celular</em> e usar o botão de tela cheia em cada exemplo. Câmera e sensores de movimento pedem permissão na primeira vez.
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 4 -->
+    <div class="bloco fade-in">
+      <div class="bloco-time">
+        <div class="bloco-time-dur">35min</div>
+        <div class="bloco-time-label">Bloco 4</div>
+      </div>
+      <div class="bloco-line"></div>
+      <div class="bloco-dot"></div>
+      <div class="bloco-body">
+        <div class="bloco-header">
+          <div class="bloco-num">Bloco 04</div>
+          <h2>Touch nativo e multitouch</h2>
+        </div>
+
+        <p>O array <code>touches[]</code> traz todos os dedos na tela ao mesmo tempo — cada um com <code>.x</code>, <code>.y</code> e <code>.id</code>. Multitouch é simplesmente percorrer esse array. As funções de evento <code>touchStarted()</code>, <code>touchMoved()</code> e <code>touchEnded()</code> são as equivalentes touch das de mouse.</p>
+
+        <div class="callout">
+          <strong>Detalhe essencial no celular:</strong> retornar <code>false</code> dentro de <code>touchMoved()</code> impede o navegador de rolar a página ou dar zoom ao tocar o canvas. Sem isso, qualquer arrasto atrapalha a interação.
+        </div>
+
+        <h3>Exemplo 1 — pontos multitoque</h3>
+        <p>Cada dedo desenha um círculo. Vários dedos ao mesmo tempo, vários círculos.</p>
+        <details class="code-toggle">
+          <summary>ver código · multitouch.js</summary>
+          <div class="code-block code-mono">let cores = [];<br>
+function setup() {<br>
+&nbsp;&nbsp;createCanvas(windowWidth, windowHeight);<br>
+&nbsp;&nbsp;background(26, 26, 24);<br>
+&nbsp;&nbsp;noStroke();<br>
+}<br>
+function draw() {<br>
+&nbsp;&nbsp;// leve fade do fundo para deixar rastro suave<br>
+&nbsp;&nbsp;fill(26, 26, 24, 25);<br>
+&nbsp;&nbsp;rect(0, 0, width, height);<br>
+&nbsp;&nbsp;for (let i = 0; i &lt; touches.length; i++) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;let t = touches[i];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fill(200, 77, 10, 180);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;circle(t.x, t.y, 70);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fill(255);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;textSize(14);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;textAlign(CENTER, CENTER);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;text(i + 1, t.x, t.y);<br>
+&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;// contador de dedos<br>
+&nbsp;&nbsp;fill(255);<br>
+&nbsp;&nbsp;textSize(16);<br>
+&nbsp;&nbsp;textAlign(LEFT, TOP);<br>
+&nbsp;&nbsp;text(touches.length + " toque(s)", 16, 16);<br>
+}<br>
+function touchMoved() { return false; }<br>
+function windowResized() { resizeCanvas(windowWidth, windowHeight); }</div>
+        </details>
+        <div class="sketch">
+          <div class="sketch-bar">
+            <span class="sketch-title">multitouch.js · pontos de toque</span>
+            <div class="sketch-btns">
+              <button class="sketch-btn" onclick="abrirFull('sk-multitouch')">⛶ tela cheia</button>
+              <button class="sketch-btn" onclick="sairFull()">↙ sair</button>
+            </div>
+          </div>
+          <iframe id="sk-multitouch" srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;UTF-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no&quot;&gt;
+&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.0/p5.min.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.0/addons/p5.sound.min.js&quot;&gt;&lt;/script&gt;
+&lt;style&gt;
+  html, body { margin: 0; padding: 0; overflow: hidden; background: #1a1a18; touch-action: none; }
+  canvas { display: block; }
+  button { font-family: monospace; }
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;script&gt;
+let cores = [];
+function setup() {
+  createCanvas(windowWidth, windowHeight);
+  background(26, 26, 24);
+  noStroke();
+}
+function draw() {
+  // leve fade do fundo para deixar rastro suave
+  fill(26, 26, 24, 25);
+  rect(0, 0, width, height);
+  for (let i = 0; i &lt; touches.length; i++) {
+    let t = touches[i];
+    fill(200, 77, 10, 180);
+    circle(t.x, t.y, 70);
+    fill(255);
+    textSize(14);
+    textAlign(CENTER, CENTER);
+    text(i + 1, t.x, t.y);
+  }
+  // contador de dedos
+  fill(255);
+  textSize(16);
+  textAlign(LEFT, TOP);
+  text(touches.length + &quot; toque(s)&quot;, 16, 16);
+}
+function touchMoved() { return false; }
+function windowResized() { resizeCanvas(windowWidth, windowHeight); }
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;" allow="camera; microphone; accelerometer; gyroscope; fullscreen"></iframe>
+        </div>
+
+        <div class="callout">
+          <strong>Atividade:</strong> mudar a cor de cada toque conforme o índice no array, ou desenhar linhas conectando todos os dedos ativos. O array <code>touches[]</code> tem tudo que é preciso.
+        </div>
+
+        <h3>Exemplo 2 — pinça feita à mão</h3>
+        <p>Medir a distância entre dois dedos é a base de um gesto de pinça-zoom — sem nenhuma biblioteca. É o mesmo raciocínio do cálculo de abertura da boca: distância entre dois pontos.</p>
+        <details class="code-toggle">
+          <summary>ver código · pinca.js</summary>
+          <div class="code-block code-mono">function setup() {<br>
+&nbsp;&nbsp;createCanvas(windowWidth, windowHeight);<br>
+}<br>
+function draw() {<br>
+&nbsp;&nbsp;background(26, 26, 24);<br>
+&nbsp;&nbsp;if (touches.length &gt;= 2) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;let a = touches[0];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;let b = touches[1];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;let d = dist(a.x, a.y, b.x, b.y);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;// linha entre os dedos<br>
+&nbsp;&nbsp;&nbsp;&nbsp;stroke(200, 77, 10);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;strokeWeight(4);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;line(a.x, a.y, b.x, b.y);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;// círculo cujo tamanho é a distância<br>
+&nbsp;&nbsp;&nbsp;&nbsp;noStroke();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fill(200, 77, 10, 80);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;circle((a.x+b.x)/2, (a.y+b.y)/2, d);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;// valor<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fill(255);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;textSize(22);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;textAlign(CENTER, CENTER);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;text(round(d) + " px", (a.x+b.x)/2, (a.y+b.y)/2);<br>
+&nbsp;&nbsp;} else {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fill(150);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;textSize(18);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;textAlign(CENTER, CENTER);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;text("toque com dois dedos", width/2, height/2);<br>
+&nbsp;&nbsp;}<br>
+}<br>
+function touchMoved() { return false; }<br>
+function windowResized() { resizeCanvas(windowWidth, windowHeight); }</div>
+        </details>
+        <div class="sketch">
+          <div class="sketch-bar">
+            <span class="sketch-title">pinca.js · distância entre dois dedos</span>
+            <div class="sketch-btns">
+              <button class="sketch-btn" onclick="abrirFull('sk-pinca')">⛶ tela cheia</button>
+              <button class="sketch-btn" onclick="sairFull()">↙ sair</button>
+            </div>
+          </div>
+          <iframe id="sk-pinca" srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;UTF-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no&quot;&gt;
+&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.0/p5.min.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.0/addons/p5.sound.min.js&quot;&gt;&lt;/script&gt;
+&lt;style&gt;
+  html, body { margin: 0; padding: 0; overflow: hidden; background: #1a1a18; touch-action: none; }
+  canvas { display: block; }
+  button { font-family: monospace; }
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;script&gt;
+function setup() {
+  createCanvas(windowWidth, windowHeight);
+}
+function draw() {
+  background(26, 26, 24);
+  if (touches.length &gt;= 2) {
+    let a = touches[0];
+    let b = touches[1];
+    let d = dist(a.x, a.y, b.x, b.y);
+    // linha entre os dedos
+    stroke(200, 77, 10);
+    strokeWeight(4);
+    line(a.x, a.y, b.x, b.y);
+    // círculo cujo tamanho é a distância
+    noStroke();
+    fill(200, 77, 10, 80);
+    circle((a.x+b.x)/2, (a.y+b.y)/2, d);
+    // valor
+    fill(255);
+    textSize(22);
+    textAlign(CENTER, CENTER);
+    text(round(d) + &quot; px&quot;, (a.x+b.x)/2, (a.y+b.y)/2);
+  } else {
+    fill(150);
+    textSize(18);
+    textAlign(CENTER, CENTER);
+    text(&quot;toque com dois dedos&quot;, width/2, height/2);
+  }
+}
+function touchMoved() { return false; }
+function windowResized() { resizeCanvas(windowWidth, windowHeight); }
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;" allow="camera; microphone; accelerometer; gyroscope; fullscreen"></iframe>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 5 -->
+    <div class="bloco fade-in">
+      <div class="bloco-time">
+        <div class="bloco-time-dur">35min</div>
+        <div class="bloco-time-label">Bloco 5</div>
+      </div>
+      <div class="bloco-line"></div>
+      <div class="bloco-dot"></div>
+      <div class="bloco-body">
+        <div class="bloco-header">
+          <div class="bloco-num">Bloco 05</div>
+          <h2>Sensores de movimento — acelerômetro e giroscópio</h2>
+        </div>
+
+        <p>O p5.js expõe os sensores de movimento como variáveis globais: <code>rotationX/Y/Z</code> para orientação (giroscópio) e <code>accelerationX/Y/Z</code> para aceleração linear. Não precisa de biblioteca — mas precisa de permissão.</p>
+
+        <div class="conceito">
+          <div class="conceito-label">Conceito</div>
+          <div class="conceito-title">Permissão de sensores — o mesmo padrão do botão serial</div>
+          <p>Desde o iOS 13, acessar acelerômetro e giroscópio exige permissão explícita do usuário via <code>DeviceOrientationEvent.requestPermission()</code>, acionada por um clique. É exatamente o mesmo padrão de segurança do botão de conexão serial da aula 5: navegadores protegem hardware sensível atrás de um gesto do usuário.</p>
+          <p>No Android a permissão costuma ser concedida direto; o código abaixo trata os dois casos.</p>
+        </div>
+
+        <h3>Exemplo 3 — bolha de nível</h3>
+        <p>A inclinação do aparelho move uma bolha pela tela, como um nível de bolha físico. Toque em "ativar sensores" e incline o celular.</p>
+        <details class="code-toggle">
+          <summary>ver código · acelerometro.js</summary>
+          <div class="code-block code-mono">let permissaoOk = false;<br>
+let btn;<br>
+function setup() {<br>
+&nbsp;&nbsp;createCanvas(windowWidth, windowHeight);<br>
+&nbsp;&nbsp;btn = createButton("ativar sensores");<br>
+&nbsp;&nbsp;btn.position(16, 16);<br>
+&nbsp;&nbsp;btn.style("font-size", "16px");<br>
+&nbsp;&nbsp;btn.style("padding", "8px 14px");<br>
+&nbsp;&nbsp;btn.mousePressed(pedirPermissao);<br>
+}<br>
+function pedirPermissao() {<br>
+&nbsp;&nbsp;if (typeof DeviceOrientationEvent !== "undefined" &amp;&amp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;typeof DeviceOrientationEvent.requestPermission === "function") {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;DeviceOrientationEvent.requestPermission().then(function(res) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (res === "granted") { permissaoOk = true; btn.hide(); }<br>
+&nbsp;&nbsp;&nbsp;&nbsp;});<br>
+&nbsp;&nbsp;} else {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;permissaoOk = true; btn.hide();<br>
+&nbsp;&nbsp;}<br>
+}<br>
+function draw() {<br>
+&nbsp;&nbsp;background(26, 26, 24);<br>
+&nbsp;&nbsp;if (!permissaoOk) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fill(150); textSize(16); textAlign(CENTER, CENTER);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;text("toque em 'ativar sensores'", width/2, height/2 + 40);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;return;<br>
+&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;// inclinação move a bolha pela tela<br>
+&nbsp;&nbsp;let x = map(rotationY, -45, 45, 0, width, true);<br>
+&nbsp;&nbsp;let y = map(rotationX, -45, 45, 0, height, true);<br>
+&nbsp;&nbsp;fill(200, 77, 10);<br>
+&nbsp;&nbsp;noStroke();<br>
+&nbsp;&nbsp;circle(x, y, 90);<br>
+&nbsp;&nbsp;fill(255); textSize(15); textAlign(LEFT, TOP);<br>
+&nbsp;&nbsp;text("rotationX: " + round(rotationX), 16, 70);<br>
+&nbsp;&nbsp;text("rotationY: " + round(rotationY), 16, 92);<br>
+}<br>
+function windowResized() { resizeCanvas(windowWidth, windowHeight); }</div>
+        </details>
+        <div class="sketch">
+          <div class="sketch-bar">
+            <span class="sketch-title">acelerometro.js · bolha de nível</span>
+            <div class="sketch-btns">
+              <button class="sketch-btn" onclick="abrirFull('sk-acel')">⛶ tela cheia</button>
+              <button class="sketch-btn" onclick="sairFull()">↙ sair</button>
+            </div>
+          </div>
+          <iframe id="sk-acel" srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;UTF-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no&quot;&gt;
+&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.0/p5.min.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.0/addons/p5.sound.min.js&quot;&gt;&lt;/script&gt;
+&lt;style&gt;
+  html, body { margin: 0; padding: 0; overflow: hidden; background: #1a1a18; touch-action: none; }
+  canvas { display: block; }
+  button { font-family: monospace; }
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;script&gt;
+let permissaoOk = false;
+let btn;
+function setup() {
+  createCanvas(windowWidth, windowHeight);
+  btn = createButton(&quot;ativar sensores&quot;);
+  btn.position(16, 16);
+  btn.style(&quot;font-size&quot;, &quot;16px&quot;);
+  btn.style(&quot;padding&quot;, &quot;8px 14px&quot;);
+  btn.mousePressed(pedirPermissao);
+}
+function pedirPermissao() {
+  if (typeof DeviceOrientationEvent !== &quot;undefined&quot; &amp;&amp;
+      typeof DeviceOrientationEvent.requestPermission === &quot;function&quot;) {
+    DeviceOrientationEvent.requestPermission().then(function(res) {
+      if (res === &quot;granted&quot;) { permissaoOk = true; btn.hide(); }
+    });
+  } else {
+    permissaoOk = true; btn.hide();
+  }
+}
+function draw() {
+  background(26, 26, 24);
+  if (!permissaoOk) {
+    fill(150); textSize(16); textAlign(CENTER, CENTER);
+    text(&quot;toque em &#x27;ativar sensores&#x27;&quot;, width/2, height/2 + 40);
+    return;
+  }
+  // inclinação move a bolha pela tela
+  let x = map(rotationY, -45, 45, 0, width, true);
+  let y = map(rotationX, -45, 45, 0, height, true);
+  fill(200, 77, 10);
+  noStroke();
+  circle(x, y, 90);
+  fill(255); textSize(15); textAlign(LEFT, TOP);
+  text(&quot;rotationX: &quot; + round(rotationX), 16, 70);
+  text(&quot;rotationY: &quot; + round(rotationY), 16, 92);
+}
+function windowResized() { resizeCanvas(windowWidth, windowHeight); }
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;" allow="camera; microphone; accelerometer; gyroscope; fullscreen"></iframe>
+        </div>
+
+        <div class="callout">
+          <strong>Variações:</strong> <code>accelerationX/Y/Z</code> para aceleração linear (movimento brusco), e <code>rotationZ</code> para a bússola. Uma bolinha que rola com a gravidade é o exemplo canônico — imediato de entender.
+        </div>
+
+        <h3>Exemplo 4 — detecção de chacoalhada</h3>
+        <p>O p5.js facilita a detecção de movimento brusco com <code>setMoveThreshold()</code> e a função de evento <code>deviceMoved()</code>. Chacoalhe o celular para trocar a cor.</p>
+        <details class="code-toggle">
+          <summary>ver código · shake.js</summary>
+          <div class="code-block code-mono">let cor;<br>
+function setup() {<br>
+&nbsp;&nbsp;createCanvas(windowWidth, windowHeight);<br>
+&nbsp;&nbsp;setMoveThreshold(30);<br>
+&nbsp;&nbsp;cor = color(26, 26, 24);<br>
+}<br>
+function draw() {<br>
+&nbsp;&nbsp;background(cor);<br>
+&nbsp;&nbsp;fill(255); textSize(18); textAlign(CENTER, CENTER);<br>
+&nbsp;&nbsp;text("chacoalhe o aparelho", width/2, height/2);<br>
+}<br>
+function deviceMoved() {<br>
+&nbsp;&nbsp;cor = color(random(120,255), random(40,120), random(10,60));<br>
+}<br>
+function windowResized() { resizeCanvas(windowWidth, windowHeight); }</div>
+        </details>
+        <div class="sketch">
+          <div class="sketch-bar">
+            <span class="sketch-title">shake.js · deviceMoved()</span>
+            <div class="sketch-btns">
+              <button class="sketch-btn" onclick="abrirFull('sk-shake')">⛶ tela cheia</button>
+              <button class="sketch-btn" onclick="sairFull()">↙ sair</button>
+            </div>
+          </div>
+          <iframe id="sk-shake" srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;UTF-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no&quot;&gt;
+&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.0/p5.min.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.0/addons/p5.sound.min.js&quot;&gt;&lt;/script&gt;
+&lt;style&gt;
+  html, body { margin: 0; padding: 0; overflow: hidden; background: #1a1a18; touch-action: none; }
+  canvas { display: block; }
+  button { font-family: monospace; }
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;script&gt;
+let cor;
+function setup() {
+  createCanvas(windowWidth, windowHeight);
+  setMoveThreshold(30);
+  cor = color(26, 26, 24);
+}
+function draw() {
+  background(cor);
+  fill(255); textSize(18); textAlign(CENTER, CENTER);
+  text(&quot;chacoalhe o aparelho&quot;, width/2, height/2);
+}
+function deviceMoved() {
+  cor = color(random(120,255), random(40,120), random(10,60));
+}
+function windowResized() { resizeCanvas(windowWidth, windowHeight); }
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;" allow="camera; microphone; accelerometer; gyroscope; fullscreen"></iframe>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 6 -->
+    <div class="bloco fade-in">
+      <div class="bloco-time">
+        <div class="bloco-time-dur">20min</div>
+        <div class="bloco-time-label">Bloco 6</div>
+      </div>
+      <div class="bloco-dot" style="background:var(--accent2)"></div>
+      <div class="bloco-body">
+        <div class="bloco-header">
+          <div class="bloco-num">Bloco 06</div>
+          <h2>Bibliotecas de gesto e o celular em rede</h2>
+        </div>
+
+        <h3>Quando uma biblioteca vale a pena</h3>
+        <p>Para gestos compostos prontos — pinça, rotação de dois dedos, swipe direcional — uma biblioteca evita reimplementar a lógica. A opção atual mais consolidada é o <strong style="color:var(--text)">Interact.js</strong>.</p>
+
+        <div class="code-block">
+          <div class="code-label">index.html + uso · Interact.js</div>
+          &lt;<span class="c-keyword">script</span> src=<span class="c-string">"https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"</span>&gt;&lt;/<span class="c-keyword">script</span>&gt;<br>
+          <br>
+          <span class="c-fn">interact</span>(<span class="c-string">'.elemento'</span>).<span class="c-fn">gesturable</span>({<br>
+          &nbsp;&nbsp;onmove: <span class="c-keyword">function</span> (event) {<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="c-comment">// event.scale = fator de pinça (zoom)</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="c-comment">// event.angle = rotação em graus</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="c-fn">console.log</span>(event.scale, event.angle);<br>
+          &nbsp;&nbsp;}<br>
+          });
+        </div>
+
+        <div class="callout">
+          <strong>Decisão de design:</strong> o Interact.js trabalha sobre elementos do DOM, não sobre o canvas p5. Se a interface é toda canvas, o touch nativo é mais direto. Se há elementos HTML (botões, imagens, divs), a biblioteca brilha. Escolher <em>não</em> usar uma biblioteca é também uma decisão de design — nem todo problema precisa de uma dependência a mais.
+        </div>
+
+        <h3>O celular como interface de instalação</h3>
+        <p>Fechando o arco do curso: o smartphone vira o controlador remoto de um sistema audiovisual. Como o navegador não envia OSC/UDP diretamente, a ponte usual é WebSocket — o celular envia os dados dos sensores para um servidor na rede, que os retransmite.</p>
+
+        <div class="code-block">
+          <div class="code-label">sketch.js · enviando sensores via WebSocket (conceitual)</div>
+          <span class="c-keyword">let</span> socket;<br>
+          <br>
+          <span class="c-keyword">function</span> <span class="c-fn">setup</span>() {<br>
+          &nbsp;&nbsp;<span class="c-fn">createCanvas</span>(windowWidth, windowHeight);<br>
+          &nbsp;&nbsp;socket = <span class="c-keyword">new</span> <span class="c-fn">WebSocket</span>(<span class="c-string">'ws://192.168.0.10:8080'</span>);<br>
+          }<br>
+          <br>
+          <span class="c-keyword">function</span> <span class="c-fn">draw</span>() {<br>
+          &nbsp;&nbsp;<span class="c-keyword">if</span> (socket.readyState === WebSocket.OPEN) {<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="c-keyword">let</span> dados = <span class="c-fn">JSON.stringify</span>({<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x: rotationX, y: rotationY, toques: touches.length<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;});<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;socket.<span class="c-fn">send</span>(dados);<br>
+          &nbsp;&nbsp;}<br>
+          }
+        </div>
+
+        <div class="callout">
+          <strong>Gancho para a próxima aula:</strong> o servidor WebSocket→OSC é uma peça extra (Node.js, ou Node-RED que veremos no IoT). Por isso o <strong>MobMuPlat</strong> é elegante: ele fala OSC nativamente do celular para o Pure Data, sem montar essa ponte. É o caminho que exploraremos a seguir.
+        </div>
+
+        <div class="callout">
+          <strong>Atividade final:</strong> em duplas, um celular controlando um sketch p5.js ou patch PD em outra tela. Qual sensor faz sentido para qual parâmetro? Inclinar para navegar, chacoalhar para disparar, tocar para criar — cada gesto carrega uma expressividade diferente.
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <hr class="divider">
+
+  <h3 style="margin-top:0;margin-bottom:16px">Materiais de apoio</h3>
+  <div class="links-grid">
+    <a class="link-item" href="https://p5js.org/reference/#group-Events" target="_blank">
+      <span class="link-icon">📄</span>
+      <div class="link-body">
+        <div>p5.js — eventos de touch e sensores</div>
+        <div class="link-desc">touches[], touchStarted, rotationX/Y/Z, deviceMoved</div>
+      </div>
+      <span class="link-arrow">↗</span>
+    </a>
+    <a class="link-item" href="https://interactjs.io/" target="_blank">
+      <span class="link-icon">📁</span>
+      <div class="link-body">
+        <div>Interact.js</div>
+        <div class="link-desc">Biblioteca mantida para drag, resize, pinça e rotação</div>
+      </div>
+      <span class="link-arrow">↗</span>
+    </a>
+    <a class="link-item" href="https://use-gesture.netlify.app/" target="_blank">
+      <span class="link-icon">📁</span>
+      <div class="link-body">
+        <div>@use-gesture</div>
+        <div class="link-desc">Biblioteca de gestos moderna — drag, pinch, scroll, wheel</div>
+      </div>
+      <span class="link-arrow">↗</span>
+    </a>
+    <a class="link-item" href="https://developer.mozilla.org/en-US/docs/Web/API/DeviceOrientationEvent" target="_blank">
+      <span class="link-icon">📄</span>
+      <div class="link-body">
+        <div>DeviceOrientationEvent — MDN</div>
+        <div class="link-desc">API de orientação e o fluxo de permissão no iOS</div>
+      </div>
+      <span class="link-arrow">↗</span>
+    </a>
+  </div>
+
+</main>
+
+<script>
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.06 });
+document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+// fullscreen para sketches embarcadas
+function abrirFull(id) {
+  const el = document.getElementById(id);
+  if (el.requestFullscreen) el.requestFullscreen();
+  else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+  else if (el.webkitEnterFullscreen) el.webkitEnterFullscreen();
+}
+function sairFull() {
+  if (document.exitFullscreen) document.exitFullscreen();
+  else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+}
+</script>
+<script src="nav.js"></script>
+</body>
+</html>
