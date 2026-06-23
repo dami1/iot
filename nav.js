@@ -40,9 +40,9 @@ const CURSO = {
     },
     {
       num: 7,
-      titulo: "IoT — integração com Pure Data e p5.js",
+      titulo: "IoT — redes de ESP32, Node-RED e nuvem",
       arquivo: "aula07.html",
-      disponivel: false,
+      disponivel: true,
     },
     {
       num: 8,
