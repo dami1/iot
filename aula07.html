@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aula 7 &mdash; IoT: redes de ESP32, Node-RED e nuvem</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f8f7f4;
+    --surface: #ffffff;
+    --surface2: #f0ede8;
+    --border: #d8d4cc;
+    --border2: #b8b4ac;
+    --text: #18180f;
+    --muted: #666660;
+    --dim: #999990;
+    --accent: #c84d0a;
+    --accent2: #a03a06;
+    --font-mono: 'DM Mono', monospace;
+    --font-sans: 'DM Sans', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  main { max-width: 780px; margin: 0 auto; padding: 0 32px 100px; }
+
+  .hero {
+    padding: 56px 0 40px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 56px;
+  }
+
+  .hero-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .hero-eyebrow::after {
+    content: '';
+    height: 1px;
+    width: 40px;
+    background: var(--accent);
+    opacity: .4;
+    display: block;
+  }
+
+  h1 {
+    font-size: clamp(24px, 4vw, 36px);
+    font-weight: 300;
+    line-height: 1.2;
+    letter-spacing: -.02em;
+    color: var(--text);
+    margin-bottom: 20px;
+  }
+
+  h1 em { font-style: normal; color: var(--accent); }
+
+  .hero-meta { display: flex; gap: 20px; flex-wrap: wrap; }
+  .hero-meta span {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .hero-meta span::before { content: '·'; color: var(--accent); }
+
+  /* ── PARTE DIVIDER ── */
+  .parte-divider {
+    margin: 0 0 48px;
+    padding: 20px 24px;
+    background: var(--accent);
+    border-radius: 8px;
+    color: #fff;
+  }
+
+  .parte-divider .parte-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    opacity: .8;
+    margin-bottom: 4px;
+  }
+
+  .parte-divider .parte-title {
+    font-size: 19px;
+    font-weight: 400;
+  }
+
+  .timeline { display: flex; flex-direction: column; }
+
+  .bloco {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 0 28px;
+    position: relative;
+    padding-bottom: 60px;
+  }
+
+  .bloco:last-child { padding-bottom: 0; }
+  .bloco-time { padding-top: 4px; text-align: right; }
+  .bloco-time-label { font-family: var(--font-mono); font-size: 10px; color: var(--dim); }
+  .bloco-time-dur { font-family: var(--font-mono); font-size: 12px; color: var(--muted); font-weight: 500; }
+
+  .bloco-line {
+    position: absolute;
+    left: 80px;
+    top: 8px;
+    bottom: 0;
+    width: 1px;
+    background: var(--border);
+  }
+
+  .bloco:last-child .bloco-line { display: none; }
+
+  .bloco-dot {
+    position: absolute;
+    left: 76px;
+    top: 6px;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--bg);
+  }
+
+  .bloco-body { padding-left: 28px; }
+  .bloco-header { margin-bottom: 24px; }
+
+  .bloco-num {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  h2 { font-size: 20px; font-weight: 400; color: var(--text); letter-spacing: -.01em; line-height: 1.3; }
+
+  h3 {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    margin: 32px 0 14px;
+    font-family: var(--font-mono);
+  }
+
+  p { color: var(--text); margin-bottom: 14px; font-size: 15px; }
+
+  ul.items {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+
+  ul.items li {
+    display: flex;
+    gap: 12px;
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  ul.items li::before {
+    content: '→';
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    flex-shrink: 0;
+    margin-top: 3px;
+  }
+
+  .callout {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.65;
+  }
+
+  .callout strong { color: var(--accent); font-weight: 500; }
+  .callout code {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 1px 6px;
+    color: var(--accent);
+  }
+
+  .code-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.9;
+    overflow-x: auto;
+  }
+
+  .code-block .c-comment { color: var(--dim); font-style: italic; }
+  .code-block .c-keyword { color: var(--accent); font-weight: 500; }
+  .code-block .c-fn      { color: #5a7a3a; }
+  .code-block .c-num     { color: #a05020; }
+  .code-block .c-string  { color: #507a50; }
+  .code-block .c-text    { color: var(--muted); }
+
+  .code-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--dim);
+    margin-bottom: 14px;
+  }
+
+  /* ── PROMPT COMPARE ── */
+  .prompt-compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  .prompt-card {
+    border-radius: 8px;
+    padding: 16px 18px;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .prompt-card.fraco {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+  }
+
+  .prompt-card.bom {
+    background: rgba(200,77,10,.05);
+    border: 1px solid rgba(200,77,10,.25);
+  }
+
+  .prompt-card .pc-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    margin-bottom: 8px;
+  }
+
+  .prompt-card.fraco .pc-label { color: var(--dim); }
+  .prompt-card.bom .pc-label { color: var(--accent); }
+  .prompt-card .pc-text { color: var(--text); font-style: italic; }
+
+  /* ── PROMPT BLOCO ── */
+  .prompt-final {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 4px;
+    margin-bottom: 24px;
+  }
+
+  .prompt-final-inner {
+    background: var(--surface2);
+    border-radius: 6px;
+    padding: 20px 24px;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  .prompt-final-inner strong { color: var(--accent); font-weight: 500; }
+  .prompt-final-inner .pf-section {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+  }
+  .prompt-final-inner .pf-section:first-child { margin-top: 0; padding-top: 0; border-top: none; }
+  .prompt-final-inner ul { margin: 6px 0 0 18px; }
+  .prompt-final-inner li { margin-bottom: 3px; }
+
+  /* ── CONCEITO ── */
+  .conceito {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+  }
+
+  .conceito-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+
+  .conceito-title { font-size: 17px; font-weight: 400; color: var(--text); margin-bottom: 10px; }
+  .conceito p { font-size: 14px; color: var(--muted); margin-bottom: 8px; line-height: 1.65; }
+  .conceito p:last-child { margin-bottom: 0; }
+  .conceito code {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 3px;
+    padding: 1px 6px;
+    color: var(--accent);
+  }
+
+  /* ── CODE TOGGLE ── */
+  .code-toggle {
+    margin-bottom: 10px;
+  }
+
+  .code-toggle summary {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--accent);
+    cursor: pointer;
+    padding: 8px 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    list-style: none;
+    user-select: none;
+    transition: border-color .15s;
+  }
+
+  .code-toggle summary:hover { border-color: var(--accent); }
+  .code-toggle summary::-webkit-details-marker { display: none; }
+  .code-toggle summary::before { content: '▸ '; color: var(--dim); }
+  .code-toggle[open] summary::before { content: '▾ '; }
+
+  .code-mono {
+    margin-top: 8px;
+    margin-bottom: 0;
+    white-space: nowrap;
+  }
+
+  /* ── SKETCH EMBED ── */
+  .sketch {
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 24px;
+    background: var(--surface);
+  }
+
+  .sketch-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .sketch-title {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: .04em;
+  }
+
+  .sketch-btns { display: flex; gap: 6px; }
+
+  .sketch-btn {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 5px 11px;
+    border: 1px solid var(--border2);
+    border-radius: 4px;
+    background: var(--surface);
+    color: var(--muted);
+    cursor: pointer;
+    transition: border-color .15s, color .15s;
+  }
+
+  .sketch-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .sketch iframe {
+    display: block;
+    width: 100%;
+    height: 420px;
+    border: none;
+    background: #1a1a18;
+  }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 52px 0 36px; }
+  .links-grid { display: flex; flex-direction: column; gap: 6px; }
+
+  .link-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    text-decoration: none;
+    color: var(--text);
+    font-size: 13px;
+    transition: border-color .15s, background .15s;
+  }
+
+  .link-item:hover { border-color: var(--border2); background: var(--surface2); }
+  .link-icon { font-family: var(--font-mono); font-size: 13px; color: var(--accent); flex-shrink: 0; width: 20px; text-align: center; }
+  .link-desc { font-size: 11px; color: var(--muted); margin-top: 2px; font-family: var(--font-mono); }
+  .link-body { flex: 1; }
+  .link-arrow { font-size: 11px; color: var(--dim); margin-left: auto; }
+
+  .fade-in { opacity: 0; transform: translateY(14px); transition: opacity .5s ease, transform .5s ease; }
+  .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 640px) {
+    main { padding: 0 18px 80px; }
+    .bloco { grid-template-columns: 60px 1fr; }
+    .prompt-compare { grid-template-columns: 1fr; }
+    .sketch iframe { height: 380px; }
+  }
+
+  /* ── TABELA DE REFERÊNCIA ── */
+  .tbl { width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 13px; }
+  .tbl th, .tbl td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; line-height: 1.5; }
+  .tbl th { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--accent); border-bottom: 1px solid var(--border2); }
+  .tbl td:first-child { font-weight: 500; color: var(--text); white-space: nowrap; }
+  .tbl tr:last-child td { border-bottom: none; }
+  .tbl code { font-family: var(--font-mono); font-size: 11px; color: var(--accent); }
+  @media (max-width: 640px) { .tbl { font-size: 12px; } .tbl th, .tbl td { padding: 8px; } }
+</style>
+</head>
+<body>
+
+<main>
+
+  <div class="hero">
+    <div class="hero-eyebrow">Aula 07 &middot; Semana 4 &middot; 3 horas</div>
+    <h1>IoT &mdash; redes de ESP32,<br><em>Node-RED</em> e a nuvem</h1>
+    <div class="hero-meta">
+      <span>Formato laborat&oacute;rio</span>
+      <span>Dois ou mais ESP32</span>
+      <span>Wi-Fi da sala</span>
+    </div>
+  </div>
+
+  <!-- ============ PARTE 1 ============ -->
+  <div class="parte-divider">
+    <div class="parte-label">Parte 1 &middot; 85 min</div>
+    <div class="parte-title">Dispositivos que conversam entre si &mdash; ESP-NOW</div>
+  </div>
+
+  <div class="timeline">
+
+    <!-- BLOCO 1 -->
+    <div class="bloco fade-in">
+      <div class="bloco-time">
+        <div class="bloco-time-dur">20min</div>
+        <div class="bloco-time-label">Bloco 1</div>
+      </div>
+      <div class="bloco-line"></div>
+      <div class="bloco-dot"></div>
+      <div class="bloco-body">
+        <div class="bloco-header">
+          <div class="bloco-num">Bloco 01</div>
+          <h2>Do dispositivo &uacute;nico &agrave; rede</h2>
+        </div>
+
+        <p>At&eacute; agora cada projeto teve um protagonista: um ESP32, um Arduino, um celular. Um sensor entrava, um som ou uma imagem sa&iacute;a. Mas a sigla IoT &mdash; <em>internet das coisas</em> &mdash; n&atilde;o &eacute; sobre <em>uma</em> coisa conectada. &Eacute; sobre v&aacute;rias coisas conversando, e o &ldquo;computador central&rdquo; deixando de ser o ator principal. Quem usa o sistema raramente v&ecirc; um computador: v&ecirc; uma l&acirc;mpada que responde, uma planta que avisa que est&aacute; com sede, uma sala que reage a quem entra.</p>
+
+        <div class="conceito">
+          <div class="conceito-label">As duas perguntas da aula</div>
+          <div class="conceito-title">Como as coisas se falam?</div>
+          <p>Duas perguntas organizam tudo o que vem a seguir. A primeira: como dois ESP32 falam <strong style="color:var(--text)">diretamente</strong>, sem passar por um roteador nem pela internet? &Eacute; o territ&oacute;rio do ESP-NOW. A segunda: como muitos dispositivos falam com o <strong style="color:var(--text)">mundo</strong> &mdash; com um painel, com a nuvem, com a voz? &Eacute; o territ&oacute;rio do Node-RED, do Arduino Cloud e da Alexa.</p>
+        </div>
+
+        <p>O fio condutor &eacute; o mesmo da aula 5, quando os protocolos entraram: cada forma de comunica&ccedil;&atilde;o resolve um problema e cria outro. Escolher entre elas &eacute; uma decis&atilde;o de projeto, n&atilde;o um detalhe t&eacute;cnico.</p>
+
+        <ul class="items">
+          <li><strong style="color:var(--text)">Local e direto</strong> &mdash; r&aacute;pido, sem infraestrutura, mas confinado ao alcance do r&aacute;dio. (ESP-NOW)</li>
+          <li><strong style="color:var(--text)">Em rede local</strong> &mdash; v&aacute;rios dispositivos e um painel, tudo dentro do Wi-Fi da sala. (MQTT + Node-RED)</li>
+          <li><strong style="color:var(--text)">Na nuvem</strong> &mdash; acess&iacute;vel de qualquer lugar, com o pre&ccedil;o da depend&ecirc;ncia de um servi&ccedil;o. (Arduino Cloud, Sinric, Alexa)</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- BLOCO 2 -->
+    <div class="bloco fade-in">
+      <div class="bloco-time">
+        <div class="bloco-time-dur">35min</div>
+        <div class="bloco-time-label">Bloco 2</div>
+      </div>
+      <div class="bloco-line"></div>
+      <div class="bloco-dot"></div>
+      <div class="bloco-body">
+        <div class="bloco-header">
+          <div class="bloco-num">Bloco 02</div>
+          <h2>ESP-NOW &mdash; comunica&ccedil;&atilde;o direta, sem roteador</h2>
+        </div>
+
+        <p>O ESP-NOW &eacute; um protocolo da pr&oacute;pria Espressif (a fabricante do ESP32). Ele usa o r&aacute;dio Wi-Fi de 2.4 GHz, mas n&atilde;o se conecta a uma rede Wi-Fi: dois ESP32 trocam pacotes diretamente, ponto a ponto, como um mouse sem fio fala com seu receptor. N&atilde;o h&aacute; roteador, n&atilde;o h&aacute; senha de rede, n&atilde;o h&aacute; internet. E foi exatamente esse o gargalo que apareceu na aula 5 com OSC: a rede da institui&ccedil;&atilde;o bloqueando o tr&aacute;fego. O ESP-NOW simplesmente n&atilde;o passa por ela.</p>
+
+        <div class="conceito">
+          <div class="conceito-label">Conceito</div>
+          <div class="conceito-title">Pareamento por endere&ccedil;o MAC</div>
+          <p>Cada dispositivo Wi-Fi tem um <strong style="color:var(--text)">endere&ccedil;o MAC</strong> &mdash; seis bytes &uacute;nicos gravados de f&aacute;brica, algo como <code>30:C6:F7:23:34:44</code>. No ESP-NOW, um dispositivo envia para outro endere&ccedil;ando o MAC do destino. Descobrir o MAC de cada placa &eacute; sempre o primeiro passo. Depois de adicionar o outro como <em>peer</em>, a conex&atilde;o &eacute; persistente: se uma placa reinicia, ela volta a falar com a outra sem novo aperto de m&atilde;o.</p>
+        </div>
+
+        <h3>Caracter&iacute;sticas que definem o uso</h3>
+        <ul class="items">
+          <li><strong style="color:var(--text)">Payload de 250 bytes</strong> por mensagem (na vers&atilde;o cl&aacute;ssica). Suficiente para leituras de sensor e comandos &mdash; n&atilde;o para imagem, hist&oacute;rico ou texto longo.</li>
+          <li><strong style="color:var(--text)">At&eacute; 20 peers</strong> registrados por placa. D&aacute; para montar redes pequenas, n&atilde;o enxames de centenas.</li>
+          <li><strong style="color:var(--text)">Baixa lat&ecirc;ncia e baixo consumo</strong> &mdash; ideal para controle remoto e sensores a pilha.</li>
+          <li><strong style="color:var(--text)">Alcance de at&eacute; ~220 m</strong> em campo aberto; bem menos entre paredes.</li>
+          <li><strong style="color:var(--text)">Confirma&ccedil;&atilde;o de envio</strong> via callback, mas s&oacute; no n&iacute;vel do r&aacute;dio: sabe-se que a placa recebeu, n&atilde;o que ela processou.</li>
+        </ul>
+
+        <h3>Tr&ecirc;s topologias</h3>
+        <p>O mesmo protocolo cobre arranjos bem diferentes, e o desenho da instala&ccedil;&atilde;o decide qual usar:</p>
+        <ul class="items">
+          <li><strong style="color:var(--text)">Um para um</strong> &mdash; um controle e um receptor. O caso mais simples.</li>
+          <li><strong style="color:var(--text)">Um para muitos</strong> &mdash; uma placa envia o mesmo comando para v&aacute;rias. Um controle remoto disparando v&aacute;rios atuadores.</li>
+          <li><strong style="color:var(--text)">Muitos para um</strong> &mdash; v&aacute;rios sensores enviando para uma placa central. &Eacute; o padr&atilde;o <em>gateway</em>, que abre a segunda metade da aula.</li>
+        </ul>
+
+        <h3>Descobrindo o MAC de cada placa</h3>
+        <p>Antes de qualquer envio, rode isto em cada ESP32 e anote o endere&ccedil;o que aparece no monitor serial:</p>
+        <details class="code-toggle">
+          <summary>ver c&oacute;digo &middot; descobre_mac.ino</summary>
+          <div class="code-block code-mono">#include &lt;WiFi.h&gt;<br>
+void setup() {<br>
+&nbsp;&nbsp;Serial.begin(115200);<br>
+&nbsp;&nbsp;WiFi.mode(WIFI_STA);<br>
+&nbsp;&nbsp;Serial.print("MAC desta placa: ");<br>
+&nbsp;&nbsp;Serial.println(WiFi.macAddress());<br>
+}<br>
+void loop() {}</div>
+        </details>
+
+        <h3>O emissor &mdash; enviando uma struct</h3>
+        <p>O jeito limpo de usar os 250 bytes &eacute; definir uma <code>struct</code> com tudo que se quer mandar e enviar a struct inteira de uma vez. O <code>__attribute__((packed))</code> garante que os dados fiquem contíguos, sem espa&ccedil;os de alinhamento.</p>
+        <div class="code-block">
+          <div class="code-label">emissor.ino &middot; envia leitura a cada segundo</div>
+          <span class="c-keyword">#include</span> <span class="c-string">&lt;esp_now.h&gt;</span><br>
+          <span class="c-keyword">#include</span> <span class="c-string">&lt;WiFi.h&gt;</span><br>
+          <br>
+          <span class="c-comment">// MAC do receptor (anotado no passo anterior)</span><br>
+          <span class="c-keyword">uint8_t</span> peerMac[] = {<span class="c-num">0x30</span>, <span class="c-num">0xC6</span>, <span class="c-num">0xF7</span>, <span class="c-num">0x23</span>, <span class="c-num">0x34</span>, <span class="c-num">0x44</span>};<br>
+          <br>
+          <span class="c-keyword">typedef struct</span> {<br>
+          &nbsp;&nbsp;<span class="c-keyword">int</span> sensor;<br>
+          &nbsp;&nbsp;<span class="c-keyword">float</span> valor;<br>
+          } <span class="c-fn">__attribute__</span>((packed)) Leitura;<br>
+          <br>
+          Leitura dados;<br>
+          esp_now_peer_info_t peer;<br>
+          <br>
+          <span class="c-comment">// callback: o radio confirmou a entrega?</span><br>
+          <span class="c-keyword">void</span> <span class="c-fn">aoEnviar</span>(<span class="c-keyword">const uint8_t</span> *mac, esp_now_send_status_t status) {<br>
+          &nbsp;&nbsp;Serial.<span class="c-fn">println</span>(status == ESP_NOW_SEND_SUCCESS ? <span class="c-string">"ok"</span> : <span class="c-string">"falhou"</span>);<br>
+          }<br>
+          <br>
+          <span class="c-keyword">void</span> <span class="c-fn">setup</span>() {<br>
+          &nbsp;&nbsp;Serial.<span class="c-fn">begin</span>(<span class="c-num">115200</span>);<br>
+          &nbsp;&nbsp;WiFi.<span class="c-fn">mode</span>(WIFI_STA);<br>
+          &nbsp;&nbsp;<span class="c-keyword">if</span> (<span class="c-fn">esp_now_init</span>() != ESP_OK) <span class="c-keyword">return</span>;<br>
+          &nbsp;&nbsp;<span class="c-fn">esp_now_register_send_cb</span>(aoEnviar);<br>
+          &nbsp;&nbsp;<span class="c-fn">memcpy</span>(peer.peer_addr, peerMac, <span class="c-num">6</span>);<br>
+          &nbsp;&nbsp;peer.channel = <span class="c-num">0</span>;<br>
+          &nbsp;&nbsp;peer.encrypt = <span class="c-keyword">false</span>;<br>
+          &nbsp;&nbsp;<span class="c-fn">esp_now_add_peer</span>(&amp;peer);<br>
+          }<br>
+          <br>
+          <span class="c-keyword">void</span> <span class="c-fn">loop</span>() {<br>
+          &nbsp;&nbsp;dados.sensor = <span class="c-num">1</span>;<br>
+          &nbsp;&nbsp;dados.valor = <span class="c-fn">analogRead</span>(<span class="c-num">34</span>) * <span class="c-num">3.3</span> / <span class="c-num">4095.0</span>;<br>
+          &nbsp;&nbsp;<span class="c-fn">esp_now_send</span>(peerMac, (<span class="c-keyword">uint8_t</span> *) &amp;dados, <span class="c-keyword">sizeof</span>(dados));<br>
+          &nbsp;&nbsp;<span class="c-fn">delay</span>(<span class="c-num">1000</span>);<br>
+          }
+        </div>
+
+        <h3>O receptor &mdash; lendo a mesma struct</h3>
+        <p>O receptor define a <em>mesma</em> struct e registra uma fun&ccedil;&atilde;o que roda toda vez que um pacote chega. N&atilde;o precisa adicionar o emissor como peer s&oacute; para receber.</p>
+        <details class="code-toggle">
+          <summary>ver c&oacute;digo &middot; receptor.ino</summary>
+          <div class="code-block code-mono">#include &lt;esp_now.h&gt;<br>
+#include &lt;WiFi.h&gt;<br>
+<br>
+typedef struct {<br>
+&nbsp;&nbsp;int sensor;<br>
+&nbsp;&nbsp;float valor;<br>
+} __attribute__((packed)) Leitura;<br>
+<br>
+Leitura recebido;<br>
+<br>
+// roda a cada pacote que chega<br>
+void aoReceber(const uint8_t *mac, const uint8_t *dados, int tam) {<br>
+&nbsp;&nbsp;memcpy(&amp;recebido, dados, sizeof(recebido));<br>
+&nbsp;&nbsp;Serial.print("sensor ");<br>
+&nbsp;&nbsp;Serial.print(recebido.sensor);<br>
+&nbsp;&nbsp;Serial.print(" = ");<br>
+&nbsp;&nbsp;Serial.println(recebido.valor);<br>
+}<br>
+<br>
+void setup() {<br>
+&nbsp;&nbsp;Serial.begin(115200);<br>
+&nbsp;&nbsp;WiFi.mode(WIFI_STA);<br>
+&nbsp;&nbsp;if (esp_now_init() != ESP_OK) return;<br>
+&nbsp;&nbsp;esp_now_register_recv_cb(aoReceber);<br>
+}<br>
+<br>
+void loop() {}</div>
+        </details>
+
+        <div class="callout">
+          <strong>Armadilhas que falham em sil&ecirc;ncio:</strong> um &uacute;nico byte errado no MAC e <em>nada</em> acontece, sem mensagem de erro &mdash; confira byte a byte. Se uma das placas estiver tamb&eacute;m conectada ao Wi-Fi, o ESP-NOW precisa usar o <strong>mesmo canal</strong> do roteador. E vale lembrar da aula 3: com Wi-Fi ativo, evite os pinos <code>ADC2</code> para leitura anal&oacute;gica.
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 3 -->
+    <div class="bloco fade-in">
+      <div class="bloco-time">
+        <div class="bloco-time-dur">30min</div>
+        <div class="bloco-time-label">Bloco 3</div>
+      </div>
+      <div class="bloco-line"></div>
+      <div class="bloco-dot"></div>
+      <div class="bloco-body">
+        <div class="bloco-header">
+          <div class="bloco-num">Bloco 03</div>
+          <h2>O padr&atilde;o gateway &mdash; juntando ESP-NOW e Wi-Fi</h2>
+        </div>
+
+        <p>Aqui as duas perguntas da aula se encontram. O ESP-NOW &eacute; &oacute;timo entre dispositivos, mas n&atilde;o fala com a internet. O Wi-Fi fala com a internet, mas dar conex&atilde;o Wi-Fi a cada sensorzinho gasta energia e complica o c&oacute;digo. A solu&ccedil;&atilde;o elegante combina os dois: v&aacute;rios n&oacute;s sensores simples conversam por ESP-NOW com <em>uma</em> placa central &mdash; o <strong style="color:var(--text)">gateway</strong> &mdash; e s&oacute; ela carrega a complexidade de falar com a rede.</p>
+
+        <div class="conceito">
+          <div class="conceito-label">Arquitetura</div>
+          <div class="conceito-title">N&oacute;s simples, gateway esperto</div>
+          <p>Cada n&oacute; sensor s&oacute; faz uma coisa: ler e enviar por ESP-NOW. Fica barato, a pilha, sem senha de Wi-Fi gravada. O gateway recebe de todos por ESP-NOW e republica para o mundo &mdash; por MQTT, que &eacute; o protocolo que veremos a seguir. Esse desenho evita dar Wi-Fi a cada sensor e ainda assim torna os dados acess&iacute;veis remotamente.</p>
+        </div>
+
+        <div class="code-block">
+          <div class="code-label">gateway.ino &middot; recebe por ESP-NOW, republica por MQTT (esbo&ccedil;o)</div>
+          <span class="c-comment">// ...includes de esp_now, WiFi e PubSubClient...</span><br>
+          <span class="c-keyword">void</span> <span class="c-fn">aoReceber</span>(<span class="c-keyword">const uint8_t</span> *mac, <span class="c-keyword">const uint8_t</span> *dados, <span class="c-keyword">int</span> tam) {<br>
+          &nbsp;&nbsp;<span class="c-fn">memcpy</span>(&amp;recebido, dados, <span class="c-keyword">sizeof</span>(recebido));<br>
+          &nbsp;&nbsp;<span class="c-comment">// monta o topico a partir do numero do sensor</span><br>
+          &nbsp;&nbsp;String topico = <span class="c-string">"casa/sensores/"</span> + String(recebido.sensor);<br>
+          &nbsp;&nbsp;mqtt.<span class="c-fn">publish</span>(topico.<span class="c-fn">c_str</span>(), String(recebido.valor).<span class="c-fn">c_str</span>());<br>
+          }
+        </div>
+
+        <div class="callout">
+          <strong>Por que isto importa para o design:</strong> a pessoa que monta a instala&ccedil;&atilde;o n&atilde;o pensa &ldquo;ESP-NOW&rdquo; ou &ldquo;MQTT&rdquo;. Ela pensa &ldquo;tenho cinco sensores espalhados e quero ver tudo num lugar s&oacute;&rdquo;. O gateway &eacute; a tradu&ccedil;&atilde;o dessa inten&ccedil;&atilde;o em arquitetura &mdash; e &eacute; uma decis&atilde;o que molda custo, autonomia de bateria e alcance do projeto.
+        </div>
+
+        <div class="callout">
+          <strong>Atividade:</strong> em trios, montar a topologia muitos-para-um. Dois ESP32 como n&oacute;s sensores (um potenci&ocirc;metro cada) e um terceiro como gateway imprimindo no serial o que chega de cada um. Quem &eacute; o n&oacute; 1, quem &eacute; o n&oacute; 2? O endere&ccedil;o MAC vira a identidade de cada dispositivo na rede.
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ============ PARTE 2 ============ -->
+  <div class="parte-divider" style="margin-top:48px">
+    <div class="parte-label">Parte 2 &middot; 95 min</div>
+    <div class="parte-title">Dispositivos que conversam com o mundo &mdash; Node-RED, nuvem e voz</div>
+  </div>
+
+  <div class="timeline">
+
+    <!-- BLOCO 4 -->
+    <div class="bloco fade-in">
+      <div class="bloco-time">
+        <div class="bloco-time-dur">30min</div>
+        <div class="bloco-time-label">Bloco 4</div>
+      </div>
+      <div class="bloco-line"></div>
+      <div class="bloco-dot"></div>
+      <div class="bloco-body">
+        <div class="bloco-header">
+          <div class="bloco-num">Bloco 04</div>
+          <h2>Node-RED e as engines de fluxo</h2>
+        </div>
+
+        <p>O Node-RED &eacute; uma ferramenta de programa&ccedil;&atilde;o <strong style="color:var(--text)">por fluxo</strong>: em vez de escrever c&oacute;digo linha a linha, voc&ecirc; arrasta blocos (chamados <em>nodes</em>) e os conecta com fios. Cada node faz uma coisa &mdash; recebe uma mensagem, transforma, envia adiante. &Eacute; conceitualmente pr&oacute;ximo do Pure Data da primeira aula: o mesmo paradigma de fluxo de dados, s&oacute; que voltado para servi&ccedil;os web e dispositivos em vez de &aacute;udio. Quem entendeu o PD entende o Node-RED rapidamente.</p>
+
+        <div class="conceito">
+          <div class="conceito-label">A cola entre tudo</div>
+          <div class="conceito-title">MQTT, o protocolo que faltava</div>
+          <p>O ESP32 e o Node-RED n&atilde;o se falam direto &mdash; eles trocam mensagens por um <strong style="color:var(--text)">broker MQTT</strong>. O MQTT &eacute; leve e funciona por publica&ccedil;&atilde;o e assinatura: o dispositivo <em>publica</em> num t&oacute;pico (ex.: <code>casa/sensores/1</code>) e qualquer interessado <em>assina</em> aquele t&oacute;pico para receber. &Eacute; o mesmo gancho que deixamos no ar na aula 5, quando o OSC apareceu: o MQTT &eacute; a extens&atilde;o natural daquele fluxo para a internet.</p>
+        </div>
+
+        <h3>Um fluxo m&iacute;nimo</h3>
+        <ul class="items">
+          <li><strong style="color:var(--text)">mqtt in</strong> &mdash; assina um t&oacute;pico e injeta cada mensagem no fluxo.</li>
+          <li><strong style="color:var(--text)">function</strong> &mdash; um peda&ccedil;o de JavaScript que transforma a mensagem.</li>
+          <li><strong style="color:var(--text)">dashboard</strong> &mdash; gauges, gr&aacute;ficos e bot&otilde;es para ver e controlar.</li>
+          <li><strong style="color:var(--text)">debug</strong> &mdash; o equivalente ao monitor serial: mostra o que est&aacute; passando.</li>
+        </ul>
+
+        <p>Com v&aacute;rios ESP32, n&atilde;o &eacute; preciso um node por sensor: um t&oacute;pico com curinga, <code>casa/sensores/#</code>, captura todos de uma vez, e uma fun&ccedil;&atilde;o roteia pelo nome do t&oacute;pico. &Eacute; o lado do gateway que montamos na Parte 1, agora visto de cima.</p>
+
+        <h3>Engines parecidas &mdash; quando cada uma</h3>
+        <table class="tbl">
+          <tr><th>Ferramenta</th><th>For&ccedil;a</th><th>Quando usar</th></tr>
+          <tr><td>Node-RED</td><td>Fluxos visuais flex&iacute;veis, conecta qualquer coisa a qualquer coisa</td><td>Prototipar l&oacute;gica e pain&eacute;is r&aacute;pido, rodando local</td></tr>
+          <tr><td>Home Assistant</td><td>Automa&ccedil;&atilde;o residencial pronta, cat&aacute;logo enorme de dispositivos</td><td>Casa inteligente de verdade, com interface acabada</td></tr>
+          <tr><td>ESPHome</td><td>Configura o firmware do ESP por YAML, sem escrever C++</td><td>Muitos n&oacute;s ESP padronizados e f&aacute;ceis de manter</td></tr>
+          <tr><td>FlowFuse</td><td>Node-RED gerenciado na nuvem, com broker e frota de dispositivos</td><td>Sair do prot&oacute;tipo local para algo hospedado</td></tr>
+          <tr><td>n8n</td><td>Automa&ccedil;&atilde;o entre servi&ccedil;os web (APIs, planilhas, e-mail)</td><td>Quando o foco &eacute; software e n&atilde;o hardware</td></tr>
+        </table>
+
+        <div class="callout">
+          <strong>Local primeiro:</strong> um atrativo do Node-RED em 2026 &eacute; rodar inteiro na sala &mdash; num Raspberry Pi ou num PC &mdash; com o broker Mosquitto ao lado. As automa&ccedil;&otilde;es continuam funcionando mesmo se a internet cair, e nenhum dado sai do pr&eacute;dio. Para uma instala&ccedil;&atilde;o art&iacute;stica num espa&ccedil;o expositivo, essa independ&ecirc;ncia costuma valer mais que o acesso remoto.
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 5 -->
+    <div class="bloco fade-in">
+      <div class="bloco-time">
+        <div class="bloco-time-dur">25min</div>
+        <div class="bloco-time-label">Bloco 5</div>
+      </div>
+      <div class="bloco-line"></div>
+      <div class="bloco-dot"></div>
+      <div class="bloco-body">
+        <div class="bloco-header">
+          <div class="bloco-num">Bloco 05</div>
+          <h2>Arduino Cloud &mdash; o caminho gerenciado</h2>
+        </div>
+
+        <p>Montar broker, Node-RED e dashboard d&aacute; controle total, mas d&aacute; trabalho. O Arduino Cloud &eacute; o oposto da balan&ccedil;a: voc&ecirc; declara as vari&aacute;veis que quer sincronizar, e a placa e o painel passam a refletir os mesmos valores quase sem c&oacute;digo de rede. &Eacute; o mesmo trade-off de sempre &mdash; facilidade em troca de limites e de depend&ecirc;ncia de um servi&ccedil;o.</p>
+
+        <div class="conceito">
+          <div class="conceito-label">Como funciona</div>
+          <div class="conceito-title">Vari&aacute;veis que se sincronizam sozinhas</div>
+          <p>Voc&ecirc; cria uma <em>Thing</em> e define propriedades (ex.: <code>temperatura</code>, <code>luzLigada</code>). O editor gera o esqueleto do c&oacute;digo; voc&ecirc; s&oacute; preenche a leitura do sensor. Quando a vari&aacute;vel muda na placa, o painel atualiza; quando voc&ecirc; mexe num bot&atilde;o do painel, a placa recebe. Suporta ESP32 e ESP8266, atualiza&ccedil;&atilde;o de firmware pelo ar (OTA) e dashboards de arrastar e soltar.</p>
+        </div>
+
+        <div class="callout">
+          <strong>Os limites do plano gratuito (importante para a aula):</strong> o plano Free permite apenas <strong>2 dispositivos</strong>, <strong>25 compila&ccedil;&otilde;es por dia</strong> no editor online e reten&ccedil;&atilde;o curta de dados &mdash; recursos como OTA e API ficam nos planos pagos. D&aacute; para aprender e prototipar; n&atilde;o d&aacute; para uma frota. Para a turma, dividir-se em poucos grupos evita esbarrar no limite de compila&ccedil;&otilde;es no meio do laborat&oacute;rio.
+        </div>
+
+        <p>O Arduino Cloud tamb&eacute;m tem integra&ccedil;&atilde;o oficial com a Alexa &mdash; o que nos leva direto ao pr&oacute;ximo bloco, onde a voz entra e a mesma tens&atilde;o entre &ldquo;local e fr&aacute;gil&rdquo; e &ldquo;nuvem e robusto&rdquo; reaparece.</p>
+      </div>
+    </div>
+
+    <!-- BLOCO 6 -->
+    <div class="bloco fade-in">
+      <div class="bloco-time">
+        <div class="bloco-time-dur">20min</div>
+        <div class="bloco-time-label">Bloco 6</div>
+      </div>
+      <div class="bloco-line"></div>
+      <div class="bloco-dot"></div>
+      <div class="bloco-body">
+        <div class="bloco-header">
+          <div class="bloco-num">Bloco 06</div>
+          <h2>Alexa &mdash; tr&ecirc;s caminhos, tr&ecirc;s trade-offs</h2>
+        </div>
+
+        <p>&ldquo;Alexa, ligue a luz&rdquo; parece m&aacute;gica, mas por baixo h&aacute; escolhas de arquitetura bem diferentes para fazer um ESP32 obedecer. S&atilde;o tr&ecirc;s caminhos, e a diferen&ccedil;a entre eles &eacute; um bom resumo de toda a aula.</p>
+
+        <table class="tbl">
+          <tr><th>Caminho</th><th>Como funciona</th><th>Pre&ccedil;o disso</th></tr>
+          <tr><td>Emula&ccedil;&atilde;o local<br>(Espalexa / FauxmoESP)</td><td>O ESP finge ser uma l&acirc;mpada Philips Hue ou WeMo; a Alexa o encontra na rede local. Sem conta, sem nuvem.</td><td>Fr&aacute;gil: Echos novos ignoram a descoberta antiga, roteadores bloqueiam o multicast, e quebra quando a Amazon muda algo.</td></tr>
+          <tr><td>Nuvem a nuvem<br>(Sinric Pro)</td><td>O ESP abre uma conex&atilde;o WebSocket segura <em>de sa&iacute;da</em> para o servi&ccedil;o; a skill oficial da Alexa fala com esse servi&ccedil;o.</td><td>Depende da internet e de um terceiro, mas atravessa firewalls e funciona com todas as gera&ccedil;&otilde;es de Echo.</td></tr>
+          <tr><td>Arduino Cloud</td><td>Skill oficial amarrada &agrave;s <em>Things</em> que voc&ecirc; j&aacute; criou no Arduino Cloud.</td><td>Simples se voc&ecirc; j&aacute; usa o Arduino Cloud; preso aos limites do plano.</td></tr>
+        </table>
+
+        <div class="conceito">
+          <div class="conceito-label">Por que a emula&ccedil;&atilde;o local &eacute; fr&aacute;gil</div>
+          <div class="conceito-title">Um truque de descoberta, n&atilde;o uma API</div>
+          <p>Bibliotecas como a Espalexa fazem o ESP responder como se fosse uma ponte Hue, usando pacotes UDP de descoberta na rede. Echos de gera&ccedil;&atilde;o mais nova passaram a ignorar esses pacotes, e roteadores frequentemente bloqueiam multicast entre faixas de 2.4 e 5 GHz. A pr&oacute;pria documenta&ccedil;&atilde;o da Espalexa avisa que a API usada n&atilde;o &eacute; est&aacute;vel e n&atilde;o serve para produ&ccedil;&atilde;o. &Oacute;tima para uma demo r&aacute;pida; arriscada para uma instala&ccedil;&atilde;o que precisa funcionar no dia.</p>
+        </div>
+
+        <div class="code-block">
+          <div class="code-label">comparando as duas abordagens &middot; o n&uacute;cleo de cada uma</div>
+          <span class="c-comment">// LOCAL - Espalexa: define um dispositivo e um callback</span><br>
+          espalexa.<span class="c-fn">addDevice</span>(<span class="c-string">"Luz da sala"</span>, luzMudou);<br>
+          espalexa.<span class="c-fn">begin</span>();<br>
+          <span class="c-comment">// luzMudou(brilho) e chamado quando a Alexa manda</span><br>
+          <br>
+          <span class="c-comment">// NUVEM - Sinric Pro: usa IDs do portal e um WebSocket</span><br>
+          SinricProSwitch&amp; sw = SinricPro[SWITCH_ID];<br>
+          sw.<span class="c-fn">onPowerState</span>(aoLigarDesligar);<br>
+          SinricPro.<span class="c-fn">begin</span>(APP_KEY, APP_SECRET);
+        </div>
+
+        <div class="callout">
+          <strong>Seguran&ccedil;a, de novo:</strong> o caminho de nuvem expõe seu dispositivo a um servi&ccedil;o externo &mdash; nunca coloque dados sens&iacute;veis num broker p&uacute;blico de teste, e troque chaves e senhas antes de qualquer instala&ccedil;&atilde;o que v&aacute; ao ar. &Eacute; a mesma li&ccedil;&atilde;o do roteador dedicado da aula 5: conveni&ecirc;ncia e exposi&ccedil;&atilde;o andam juntas.
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 7 -->
+    <div class="bloco fade-in">
+      <div class="bloco-time">
+        <div class="bloco-time-dur">25min</div>
+        <div class="bloco-time-label">Bloco 7</div>
+      </div>
+      <div class="bloco-dot" style="background:var(--accent2)"></div>
+      <div class="bloco-body">
+        <div class="bloco-header">
+          <div class="bloco-num">Bloco 07</div>
+          <h2>Backend com p5.js + ESP32 &mdash; fechando o arco</h2>
+        </div>
+
+        <p>O curso come&ccedil;ou com o sensor entrando direto no Pure Data. Agora o sensor pode estar em outra sala, falando com a nuvem, e a tela que reage a ele &eacute; uma p&aacute;gina p5.js no navegador. Falta uma &uacute;ltima ponte: o navegador n&atilde;o fala MQTT cru nem UDP, mas fala <strong style="color:var(--text)">MQTT por WebSocket</strong>. Com a biblioteca <code>mqtt.js</code>, o pr&oacute;prio sketch p5.js assina um t&oacute;pico e desenha o que chega &mdash; sem servidor intermedi&aacute;rio.</p>
+
+        <div class="conceito">
+          <div class="conceito-label">O fluxo completo</div>
+          <div class="conceito-title">ESP32 &rarr; broker &rarr; p5.js</div>
+          <p>O ESP32 publica leituras num t&oacute;pico do broker. O broker entrega para todos os assinantes. O sketch p5.js, rodando no navegador, &eacute; um desses assinantes &mdash; conecta por <code>wss://</code> (WebSocket seguro, compat&iacute;vel com o GitHub Pages) e atualiza o desenho a cada mensagem. &Eacute; o mesmo papel de ponte do Web Serial da aula 5, agora pela rede em vez do cabo.</p>
+        </div>
+
+        <div class="code-block">
+          <div class="code-label">sketch.js &middot; o n&uacute;cleo da conex&atilde;o (mqtt.js + p5)</div>
+          <span class="c-keyword">let</span> client = mqtt.<span class="c-fn">connect</span>(<span class="c-string">'wss://broker.hivemq.com:8884/mqtt'</span>);<br>
+          <br>
+          client.<span class="c-fn">on</span>(<span class="c-string">'connect'</span>, () =&gt; client.<span class="c-fn">subscribe</span>(<span class="c-string">'casa/sensores/#'</span>));<br>
+          <br>
+          client.<span class="c-fn">on</span>(<span class="c-string">'message'</span>, (topico, msg) =&gt; {<br>
+          &nbsp;&nbsp;<span class="c-keyword">let</span> valor = <span class="c-fn">parseFloat</span>(msg.<span class="c-fn">toString</span>());<br>
+          &nbsp;&nbsp;<span class="c-comment">// guarda o valor para o draw() desenhar</span><br>
+          });
+        </div>
+
+        <p>A sketch abaixo faz exatamente isso, ao vivo. Para nunca ficar na tela vazia em sala, ela mesma publica leituras simuladas de tr&ecirc;s &ldquo;n&oacute;s ESP32&rdquo; no broker p&uacute;blico e as recebe de volta &mdash; voc&ecirc; v&ecirc; os dados saindo para a nuvem e voltando, tudo no navegador. Onde houver um ESP32 real publicando nos mesmos t&oacute;picos, ele aparece junto.</p>
+
+        <details class="code-toggle">
+          <summary>ver c&oacute;digo &middot; dashboard.js</summary>
+          <div class="code-block code-mono">let nodes = {<br>
+&nbsp;&nbsp;temp: { label: "temperatura", val: 24, target: 24, unit: "C", min: 18, max: 34 },<br>
+&nbsp;&nbsp;umid: { label: "umidade", val: 55, target: 55, unit: "%", min: 30, max: 90 },<br>
+&nbsp;&nbsp;luz:&nbsp; { label: "luminosidade", val: 500, target: 500, unit: "lux", min: 0, max: 1023 }<br>
+};<br>
+let conectado = false, log = [], client;<br>
+const BASE = "iot-damiao/sala";<br>
+<br>
+function setup() {<br>
+&nbsp;&nbsp;createCanvas(windowWidth, windowHeight);<br>
+&nbsp;&nbsp;conectarBroker();<br>
+&nbsp;&nbsp;setInterval(publicarSimulado, 1500);<br>
+}<br>
+<br>
+function conectarBroker() {<br>
+&nbsp;&nbsp;client = mqtt.connect("wss://broker.hivemq.com:8884/mqtt");<br>
+&nbsp;&nbsp;client.on("connect", () =&gt; { conectado = true; client.subscribe(BASE + "/#"); });<br>
+&nbsp;&nbsp;client.on("message", (topic, msg) =&gt; {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;let k = topic.split("/").pop(), v = parseFloat(msg.toString());<br>
+&nbsp;&nbsp;&nbsp;&nbsp;if (nodes[k] &amp;&amp; !isNaN(v)) nodes[k].target = v;<br>
+&nbsp;&nbsp;});<br>
+}<br>
+<br>
+function publicarSimulado() {<br>
+&nbsp;&nbsp;for (let k in nodes) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;let n = nodes[k];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;let passo = (k === "luz") ? random(-80, 80) : random(-1.5, 1.5);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;let novo = constrain(n.target + passo, n.min, n.max);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;if (conectado) client.publish(BASE + "/" + k, novo.toFixed(1));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;else n.target = novo;<br>
+&nbsp;&nbsp;}<br>
+}<br>
+<br>
+// draw() desenha uma barra por no, suavizando val ate target<br>
+// (codigo completo de desenho na pagina)</div>
+        </details>
+
+        <div class="sketch">
+          <div class="sketch-bar">
+            <span class="sketch-title">dashboard.js &middot; ESP32 &rarr; broker &rarr; p5</span>
+            <div class="sketch-btns">
+              <button class="sketch-btn" onclick="abrirFull('sk-mqtt')">&#9906; tela cheia</button>
+              <button class="sketch-btn" onclick="sairFull()">&#8601; sair</button>
+            </div>
+          </div>
+          <iframe id="sk-mqtt" srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;UTF-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no&quot;&gt;
+&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.0/p5.min.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;https://cdn.jsdelivr.net/npm/mqtt/dist/mqtt.min.js&quot;&gt;&lt;/script&gt;
+&lt;style&gt;
+  html, body { margin: 0; padding: 0; overflow: hidden; background: #1a1a18; touch-action: none; }
+  canvas { display: block; }
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;script&gt;
+let nodes = {
+  temp: { label: &quot;temperatura&quot;, val: 24,  target: 24,  unit: &quot;C&quot;,   min: 18, max: 34 },
+  umid: { label: &quot;umidade&quot;,     val: 55,  target: 55,  unit: &quot;%&quot;,   min: 30, max: 90 },
+  luz:  { label: &quot;luminosidade&quot;,val: 500, target: 500, unit: &quot;lux&quot;, min: 0,  max: 1023 }
+};
+let conectado = false;
+let log = [];
+let client;
+const BASE = &quot;iot-damiao/sala&quot;;
+
+function setup() {
+  createCanvas(windowWidth, windowHeight);
+  textFont(&quot;monospace&quot;);
+  conectarBroker();
+  setInterval(publicarSimulado, 1500); // cada &quot;no ESP32&quot; envia leitura a cada 1.5s
+}
+
+function conectarBroker() {
+  try {
+    client = mqtt.connect(&quot;wss://broker.hivemq.com:8884/mqtt&quot;, {
+      clientId: &quot;p5-curso-&quot; + Math.floor(Math.random() * 99999),
+      connectTimeout: 4000,
+      reconnectPeriod: 3000
+    });
+    client.on(&quot;connect&quot;, function () {
+      conectado = true;
+      client.subscribe(BASE + &quot;/#&quot;);
+      addLog(&quot;conectado ao broker&quot;);
+    });
+    client.on(&quot;message&quot;, function (topic, msg) {
+      let chave = topic.split(&quot;/&quot;).pop();
+      let v = parseFloat(msg.toString());
+      if (nodes[chave] &amp;&amp; !isNaN(v)) {
+        nodes[chave].target = v;       // o desenho reage ao que CHEGA da nuvem
+        addLog(chave + &quot; = &quot; + v);
+      }
+    });
+    client.on(&quot;error&quot;, function () { conectado = false; });
+    client.on(&quot;close&quot;, function () { conectado = false; });
+  } catch (e) {
+    conectado = false;
+  }
+}
+
+function publicarSimulado() {
+  // cada no faz um passeio aleatorio em torno do valor atual
+  for (let k in nodes) {
+    let n = nodes[k];
+    let passo = (k === &quot;luz&quot;) ? random(-80, 80) : random(-1.5, 1.5);
+    let novo = constrain(n.target + passo, n.min, n.max);
+    if (conectado) {
+      client.publish(BASE + &quot;/&quot; + k, novo.toFixed(1)); // sai para a nuvem...
+    } else {
+      n.target = novo;                                  // ...ou alimenta o display direto
+    }
+  }
+}
+
+function draw() {
+  background(26, 26, 24);
+  noStroke();
+
+  // status da conexao
+  fill(conectado ? color(120, 200, 120) : color(200, 120, 40));
+  circle(26, 30, 12);
+  fill(220); textSize(13); textAlign(LEFT, CENTER);
+  text(conectado ? &quot;broker conectado - wss://broker.hivemq.com&quot;
+                 : &quot;simulacao local (sem broker)&quot;, 44, 30);
+
+  let keys = Object.keys(nodes);
+  let top = 72, gh = 86;
+  for (let i = 0; i &lt; keys.length; i++) {
+    let nd = nodes[keys[i]];
+    nd.val = lerp(nd.val, nd.target, 0.08); // suaviza ate o valor recebido
+    let y = top + i * gh;
+
+    fill(200); textSize(14); textAlign(LEFT, TOP);
+    text(&quot;no &quot; + (i + 1) + &quot; - &quot; + nd.label, 24, y);
+
+    let bx = 24, bw = width - 48, by = y + 26, bh = 20;
+    noFill(); stroke(80); strokeWeight(1); rect(bx, by, bw, bh, 4);
+    let f = map(nd.val, nd.min, nd.max, 0, bw, true);
+    noStroke(); fill(200, 77, 10); rect(bx, by, f, bh, 4);
+
+    fill(255); textSize(15); textAlign(RIGHT, TOP);
+    text(nd.val.toFixed(keys[i] === &quot;luz&quot; ? 0 : 1) + &quot; &quot; + nd.unit, bx + bw, by + bh + 6);
+    fill(120); textAlign(LEFT, TOP);
+    text(BASE + &quot;/&quot; + keys[i], bx, by + bh + 6);
+  }
+
+  let ly = top + keys.length * gh + 4;
+  fill(120); textSize(12); textAlign(LEFT, TOP);
+  text(&quot;- ultimas mensagens recebidas -&quot;, 24, ly);
+  for (let i = 0; i &lt; log.length; i++) text(log[i], 24, ly + 18 + i * 16);
+}
+
+function addLog(s) { log.unshift(s); if (log.length &gt; 5) log.pop(); }
+function windowResized() { resizeCanvas(windowWidth, windowHeight); }
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;" allow="fullscreen"></iframe>
+        </div>
+
+        <div class="callout">
+          <strong>Atividade final &amp; gancho para a aula 8:</strong> cada grupo escolhe um t&oacute;pico e publica nele &mdash; de um ESP32, do celular ou de outra aba do navegador &mdash; e v&ecirc; o painel reagir. Na pr&oacute;xima aula s&atilde;o os semin&aacute;rios: cada projeto vai usar pelo menos uma das pontes que percorremos, do sensor ao Pure Data, do ESP-NOW ao painel, da nuvem &agrave; voz. A pergunta que fica: qual ponte o seu projeto realmente precisa &mdash; e qual seria s&oacute; complexidade a mais?
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <hr class="divider">
+
+  <h3 style="margin-top:0;margin-bottom:16px">Materiais de apoio</h3>
+  <div class="links-grid">
+    <a class="link-item" href="https://randomnerdtutorials.com/esp-now-esp32-arduino-ide/" target="_blank">
+      <span class="link-icon">&#128196;</span>
+      <div class="link-body">
+        <div>ESP-NOW com ESP32 &mdash; guia pr&aacute;tico</div>
+        <div class="link-desc">struct, callbacks, topologias e endere&ccedil;o MAC</div>
+      </div>
+      <span class="link-arrow">&#8599;</span>
+    </a>
+    <a class="link-item" href="https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/network/esp_now.html" target="_blank">
+      <span class="link-icon">&#128196;</span>
+      <div class="link-body">
+        <div>ESP-NOW &mdash; documenta&ccedil;&atilde;o oficial Espressif</div>
+        <div class="link-desc">limites de payload, peers, vers&otilde;es v1.0 e v2.0</div>
+      </div>
+      <span class="link-arrow">&#8599;</span>
+    </a>
+    <a class="link-item" href="https://nodered.org/" target="_blank">
+      <span class="link-icon">&#128193;</span>
+      <div class="link-body">
+        <div>Node-RED</div>
+        <div class="link-desc">programa&ccedil;&atilde;o por fluxo, da OpenJS Foundation</div>
+      </div>
+      <span class="link-arrow">&#8599;</span>
+    </a>
+    <a class="link-item" href="https://cloud.arduino.cc/" target="_blank">
+      <span class="link-icon">&#128193;</span>
+      <div class="link-body">
+        <div>Arduino Cloud</div>
+        <div class="link-desc">Things, dashboards, OTA e integra&ccedil;&atilde;o com Alexa</div>
+      </div>
+      <span class="link-arrow">&#8599;</span>
+    </a>
+    <a class="link-item" href="https://sinric.pro/" target="_blank">
+      <span class="link-icon">&#128193;</span>
+      <div class="link-body">
+        <div>Sinric Pro</div>
+        <div class="link-desc">Alexa e Google Home via nuvem para ESP32/ESP8266</div>
+      </div>
+      <span class="link-arrow">&#8599;</span>
+    </a>
+    <a class="link-item" href="https://github.com/Aircoookie/Espalexa" target="_blank">
+      <span class="link-icon">&#128193;</span>
+      <div class="link-body">
+        <div>Espalexa</div>
+        <div class="link-desc">emula&ccedil;&atilde;o local de Alexa &mdash; simples, por&eacute;m fr&aacute;gil</div>
+      </div>
+      <span class="link-arrow">&#8599;</span>
+    </a>
+    <a class="link-item" href="https://github.com/mqttjs/MQTT.js" target="_blank">
+      <span class="link-icon">&#128196;</span>
+      <div class="link-body">
+        <div>MQTT.js</div>
+        <div class="link-desc">cliente MQTT por WebSocket para o navegador</div>
+      </div>
+      <span class="link-arrow">&#8599;</span>
+    </a>
+  </div>
+
+</main>
+
+<script>
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.06 });
+document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+function abrirFull(id) {
+  const el = document.getElementById(id);
+  if (el.requestFullscreen) el.requestFullscreen();
+  else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+  else if (el.webkitEnterFullscreen) el.webkitEnterFullscreen();
+}
+function sairFull() {
+  if (document.exitFullscreen) document.exitFullscreen();
+  else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+}
+</script>
+<script src="nav.js"></script>
+</body>
+</html>
